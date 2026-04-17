@@ -7,6 +7,8 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Euclid;
+use num_traits::Float;
 
 use serde::{Deserialize, Serialize};
 use snafu::ResultExt;

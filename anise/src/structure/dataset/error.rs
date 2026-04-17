@@ -1,10 +1,27 @@
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 use snafu::prelude::*;
 
 use crate::{
     errors::{DecodingError, IntegrityError},
     structure::lookuptable::LutError,
 };
+#[cfg(feature = "std")]
 use std::io::Error as IOError;
+
+#[cfg(not(feature = "std"))]
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub struct IOError;
+
+#[cfg(not(feature = "std"))]
+impl core::fmt::Display for IOError {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "IOError")
+    }
+}
+#[cfg(not(feature = "std"))]
+impl core::error::Error for IOError {}
+
 
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub(crate)))]

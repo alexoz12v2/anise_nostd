@@ -353,7 +353,7 @@ impl OrbitalElement {
     #[pyo3(name = "evaluate", signature=(orbit))]
     pub fn py_evaluate(&self, orbit: Orbit) -> Result<f64, PyErr> {
         self.evaluate(orbit)
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     fn __eq__(&self, other: &Self) -> bool {
@@ -366,7 +366,7 @@ impl OrbitalElement {
 }
 
 impl fmt::Display for OrbitalElement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{self:?} ({})", self.unit())
     }
 }

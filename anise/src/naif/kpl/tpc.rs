@@ -1,3 +1,4 @@
+use core::str::FromStr;
 /*
  * ANISE Toolkit
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
@@ -7,8 +8,10 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
-use std::{collections::HashMap, str::FromStr};
+use crate::HashMap;
 
 use log::warn;
 

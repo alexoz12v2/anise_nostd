@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use crate::math::Vector3;
 use core::fmt;

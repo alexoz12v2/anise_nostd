@@ -439,7 +439,7 @@ impl PyScalarExpr {
 
         scalar
             .evaluate(orbit, ab_corr, almanac)
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     /// Convert the S-Expression to a ScalarExpr
@@ -448,7 +448,7 @@ impl PyScalarExpr {
     #[classmethod]
     fn from_s_expr(_cls: Bound<'_, PyType>, expr: &str) -> Result<Self, PyErr> {
         let scalar =
-            ScalarExpr::from_s_expr(expr).map_err(|e| PyException::new_err(e.to_string()))?;
+            ScalarExpr::from_s_expr(expr).map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
 
         scalar.try_into()
     }
@@ -460,7 +460,7 @@ impl PyScalarExpr {
 
         scalar
             .to_s_expr()
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 }
 
@@ -596,7 +596,7 @@ impl PyStateSpec {
     /// :rtype: StateSpec
     #[classmethod]
     fn from_s_expr(_cls: Bound<'_, PyType>, expr: &str) -> Result<Self, PyErr> {
-        let spec = StateSpec::from_s_expr(expr).map_err(|e| PyException::new_err(e.to_string()))?;
+        let spec = StateSpec::from_s_expr(expr).map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
 
         spec.try_into()
     }
@@ -607,7 +607,7 @@ impl PyStateSpec {
         let spec = StateSpec::from(self.clone());
 
         spec.to_s_expr()
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
     /// Evaluate the orbital element enum variant for the provided orbit
     /// :type epoch: Epoch
@@ -617,7 +617,7 @@ impl PyStateSpec {
     fn py_evaluate(&self, epoch: Epoch, almanac: &Almanac) -> Result<Orbit, PyErr> {
         let spec = StateSpec::from(self.clone());
         spec.evaluate(epoch, almanac)
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
     fn __eq__(&self, other: &Self) -> bool {
         let me = StateSpec::from(self.clone());
@@ -890,7 +890,7 @@ impl PyDcmExpr {
 
         dcm_expr
             .evaluate(epoch, almanac)
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 }
 // *** Implement the From<RustType> for PythonType to convert the LISP representation *** //

@@ -73,12 +73,12 @@ impl From<&FrameUid> for Frame {
 impl fmt::Display for FrameUid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         let body_name = match celestial_name_from_id(self.ephemeris_id) {
-            Some(name) => name.to_string(),
+            Some(name) => alloc::string::String::from(name),
             None => format!("body {}", self.ephemeris_id),
         };
 
         let orientation_name = match orientation_name_from_id(self.orientation_id) {
-            Some(name) => name.to_string(),
+            Some(name) => alloc::string::String::from(name),
             None => format!("orientation {}", self.orientation_id),
         };
 

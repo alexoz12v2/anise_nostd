@@ -63,7 +63,7 @@ impl Ephemeris {
                 Some(val_str) => Ok(val_str.trim().to_string()),
                 None => Err(EphemerisError::OEMParsingError {
                     lno,
-                    details: err.to_string(),
+                    details: alloc::string::String::from(err),
                 }),
             }
         };
@@ -414,7 +414,7 @@ impl Ephemeris {
         writeln!(
             writer,
             "CREATION_DATE = {}",
-            Formatter::new(Epoch::now().unwrap(), iso8601_no_ts)
+            Formatter::new(Epoch::from_gregorian_tai_at_midnight(2000, 1, 1), iso8601_no_ts)
         )
         .map_err(err_hdlr)?;
         writeln!(

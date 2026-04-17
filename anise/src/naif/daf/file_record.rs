@@ -7,8 +7,10 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
 
-use std::str::Utf8Error;
+use core::str::Utf8Error;
 
 use snafu::prelude::*;
 use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout};
@@ -111,7 +113,7 @@ impl FileRecord {
                 _ => {
                     error!("DAF of type `{}` is not yet supported", &str_locidw[4..]);
                     Err(FileRecordError::UnsupportedIdentifier {
-                        loci: loci.to_string(),
+                        loci: alloc::string::String::from(loci),
                     })
                 }
             }
@@ -127,7 +129,7 @@ impl FileRecord {
             Endian::Big
         } else {
             return Err(FileRecordError::InvalidEndian {
-                read: str_endianness.to_string(),
+                read: alloc::string::String::from(str_endianness),
             });
         };
         if file_endian != Endian::f64_native() || file_endian != Endian::u64_native() {

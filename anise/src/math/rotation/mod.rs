@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 /// The smallest difference between two radians is set to one arcsecond.
 pub(crate) const EPSILON_RAD: f64 = 4.8e-6;

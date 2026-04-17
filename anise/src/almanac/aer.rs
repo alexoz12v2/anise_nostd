@@ -1,3 +1,6 @@
+use num_traits::Float;
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
 /*
  * ANISE Toolkit
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
@@ -58,7 +61,7 @@ impl Almanac {
             source: DataSetError::DataSetLut {
                 action: "seeking location by name",
                 source: LutError::UnknownName {
-                    name: name.to_string(),
+                    name: alloc::string::String::from(name),
                 },
             },
         })

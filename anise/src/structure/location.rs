@@ -7,6 +7,9 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Euclid;
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 use der::{Decode, Encode, Reader, Writer};
 
 use crate::frames::FrameUid;
@@ -60,7 +63,7 @@ impl Location {
         serde_dhall::from_str(repr)
             .static_type_annotation()
             .parse::<Self>()
-            .map_err(|e| e.to_string())
+            .map_err(|e| alloc::format!("{}", e))
     }
 
     /// Returns the Dhall representation of this Location
@@ -68,7 +71,7 @@ impl Location {
         serde_dhall::serialize(&self)
             .static_type_annotation()
             .to_string()
-            .map_err(|e| e.to_string())
+            .map_err(|e| alloc::format!("{}", e))
     }
 
     /// Ensures that the terrain mask is ordered by azimuth, and remove duplicate azimuths
@@ -96,7 +99,7 @@ impl Location {
         }
         let idx = self
             .terrain_mask
-            .partition_point(|mask| mask.azimuth_deg <= azimuth_deg.rem_euclid(360.0));
+            .partition_point(|mask| mask.azimuth_deg <= num_traits::Euclid::rem_euclid(&azimuth_deg, &360.0));
         if idx == 0 {
             return self
                 .terrain_mask
@@ -348,7 +351,7 @@ impl<'a> Decode<'a> for Location {
 }
 
 impl core::fmt::Display for Location {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
             "lat.: {:.3} deg, long.: {:.3} deg, alt.: {:.3} km on {}",

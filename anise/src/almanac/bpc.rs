@@ -7,8 +7,12 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
-use std::collections::HashMap;
+use crate::HashMap;
 
 use hifitime::Epoch;
 
@@ -41,7 +45,7 @@ impl Almanac {
     /// To unload a file, call bpc_unload.
     pub fn with_bpc_as(mut self, bpc: BPC, alias: Option<String>) -> Self {
         // For lifetime reasons, we format the message using a ref first
-        let alias = alias.unwrap_or(Epoch::now().unwrap_or_default().to_string());
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
         let msg = format!("unloading BPC `{alias}`");
         if self.bpc_data.insert(alias, bpc).is_some() {
             warn!("{msg}");
@@ -54,7 +58,7 @@ impl Almanac {
     pub fn bpc_unload(&mut self, alias: &str) -> Result<(), OrientationError> {
         if self.bpc_data.swap_remove(alias).is_none() {
             Err(OrientationError::AliasNotFound {
-                alias: alias.to_string(),
+                alias: alloc::string::String::from(alias),
                 action: "unload BPC",
             })
         } else {
@@ -83,7 +87,7 @@ impl Almanac {
             action: "searching for BPC summary",
             source: DAFError::SummaryNameAtEpochError {
                 kind: "BPC",
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
                 epoch,
             },
         })
@@ -134,7 +138,7 @@ impl Almanac {
             action: "searching for BPC summary",
             source: DAFError::SummaryNameError {
                 kind: "BPC",
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
             },
         })
     }
@@ -258,7 +262,7 @@ mod ut_almanac_bpc {
     fn summaries_nothing_loaded() {
         let almanac = Almanac::default();
 
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
 
         assert!(
             almanac.bpc_summary(0).is_err(),

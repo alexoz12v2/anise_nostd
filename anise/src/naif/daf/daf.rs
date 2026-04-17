@@ -8,13 +8,21 @@
  * Documentation: https://nyxspace.com/
  */
 
+#[cfg(feature = "std")]
+use crate::errors::InputOutputError;
+#[cfg(feature = "std")]
+use zerocopy::IntoBytes;
+
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+
 use super::file_record::FileRecordError;
 use super::{
     DAFError, DecodingNameSnafu, DecodingSummarySnafu, FileRecordSnafu, NAIFDataSet, NAIFRecord,
     NAIFSummaryRecord,
 };
 pub use super::{FileRecord, NameRecord, SummaryRecord};
-use crate::errors::{DecodingError, InputOutputError};
+use crate::errors::DecodingError;
 use crate::naif::daf::DecodingDataSnafu;
 use crate::{errors::IntegrityError, DBL_SIZE};
 use bytes::{Bytes, BytesMut};
@@ -26,14 +34,17 @@ use hifitime::{Epoch, Unit};
 use log::{debug, error, trace};
 use snafu::ResultExt;
 
-use zerocopy::IntoBytes;
 use zerocopy::{FromBytes, Ref};
 
 macro_rules! io_imports {
     () => {
+        #[cfg(feature = "std")]
         use std::fs::File;
+        #[cfg(feature = "std")]
         use std::io::Result as IoResult;
+        #[cfg(feature = "std")]
         use std::io::Write;
+        #[cfg(feature = "std")]
         use std::path::Path;
     };
 }
@@ -96,12 +107,13 @@ impl<R: NAIFSummaryRecord> DAF<R> {
     }
 
     /// Loads the provided path in heap and parse.
+    #[cfg(feature = "std")]
     pub fn load(path: &str) -> Result<Self, DAFError> {
         let bytes = match std::fs::read(path) {
             Err(e) => {
                 return Err(DAFError::IO {
                     action: format!("loading {path:?}"),
-                    source: InputOutputError::IOError { kind: e.kind() },
+                    source: crate::errors::InputOutputError::IOError { kind: e.kind() },
                 })
             }
             Ok(bytes) => BytesMut::from(&bytes[..]),
@@ -278,7 +290,7 @@ impl<R: NAIFSummaryRecord> DAF<R> {
             error!("No summary {name} valid at epoch {epoch}");
             Err(DAFError::SummaryNameAtEpochError {
                 kind: R::NAME,
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
                 epoch,
             })
         }
@@ -369,7 +381,7 @@ impl<R: NAIFSummaryRecord> DAF<R> {
         }
         Err(DAFError::NameError {
             kind: R::NAME,
-            name: name.to_string(),
+            name: alloc::string::String::from(name),
         })
     }
 
@@ -500,6 +512,7 @@ impl<R: NAIFSummaryRecord> DAF<R> {
     }
 
     /// Writes the contents of this DAF file to a new location.
+    #[cfg(feature = "std")]
     pub fn persist<P: AsRef<Path>>(&self, path: P) -> IoResult<()> {
         let mut fs = File::create(path)?;
 
@@ -541,7 +554,7 @@ impl<R: NAIFSummaryRecord> DAF<R> {
 
 impl<R: NAIFSummaryRecord> Hash for DAF<R> {
     /// Hash will only hash the bytes, nothing else (since these are derived from the bytes anyway).
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.bytes.hash(state);
     }
 }
@@ -639,14 +652,14 @@ mod daf_ut {
 
     #[test]
     fn summary_from_name() {
-        let epoch = Epoch::now().unwrap();
+        let epoch = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let traj = SPK::load("../data/gmat-hermite.bsp").unwrap();
 
         assert_eq!(
             traj.summary_from_name_at_epoch("name", epoch),
             Err(DAFError::NameError {
                 kind: "SPKSummaryRecord",
-                name: "name".to_string()
+                name: alloc::string::String::from("name")
             })
         );
 
@@ -656,7 +669,7 @@ mod daf_ut {
             traj.summary_from_name_at_epoch("SPK_SEGMENT", epoch),
             Err(DAFError::SummaryNameAtEpochError {
                 kind: "SPKSummaryRecord",
-                name: "SPK_SEGMENT".to_string(),
+                name: alloc::string::String::from("SPK_SEGMENT"),
                 epoch
             })
         );

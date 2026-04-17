@@ -73,7 +73,7 @@ impl Ephemeris {
             } else {
                 Err(EphemerisError::STKEParsingError {
                     lno,
-                    details: err.to_string(),
+                    details: alloc::string::String::from(err),
                 })
             }
         };

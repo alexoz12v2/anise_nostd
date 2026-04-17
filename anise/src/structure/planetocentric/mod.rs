@@ -1,3 +1,4 @@
+use num_traits::Float;
 /*
  * ANISE Toolkit
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
@@ -348,7 +349,7 @@ impl fmt::Display for PlanetaryData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Initialize new frame UIDs with arbitrary ephemeris centers, and we don't print those.
         let orientation_name = match orientation_name_from_id(self.object_id) {
-            Some(name) => name.to_string(),
+            Some(name) => alloc::string::String::from(name),
             None => format!("planetary data {}", self.object_id),
         };
 

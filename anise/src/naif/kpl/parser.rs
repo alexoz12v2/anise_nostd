@@ -8,30 +8,47 @@
  * Documentation: https://nyxspace.com/
  */
 
-// Credit: ChatGPT for 80% of the code to parse the file from the SPICE docs.
-
+#[cfg(feature = "std")]
 use core::fmt;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::Path;
-
-use log::{error, info, warn};
-
+#[cfg(feature = "std")]
+use log::{error, info};
 use crate::constants::orientations::J2000;
-use crate::math::rotation::{r1, r2, r3, Quaternion, DCM};
-use crate::math::Matrix3;
-use crate::naif::kpl::fk::FKItem;
 use crate::naif::kpl::tpc::TPCItem;
-use crate::naif::kpl::Parameter;
-use crate::structure::dataset::{DataSetError, DataSetType};
-use crate::structure::metadata::Metadata;
 use crate::structure::planetocentric::ellipsoid::Ellipsoid;
 use crate::structure::planetocentric::phaseangle::PhaseAngle;
 use crate::structure::planetocentric::{PlanetaryData, MAX_NUT_PREC_ANGLES};
-use crate::structure::{EulerParameterDataSet, PlanetaryDataSet};
+#[cfg(feature = "std")]
+use crate::structure::PlanetaryDataSet;
+use crate::naif::kpl::KPLItem;
 
-use super::{KPLItem, KPLValue};
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
+#[cfg(feature = "std")]
+use std::println;
+
+// Credit: ChatGPT for 80% of the code to parse the file from the SPICE docs.
+
+use crate::HashMap;
+#[cfg(feature = "std")]
+use std::fs::File;
+#[cfg(feature = "std")]
+use std::io::{BufRead, BufReader};
+#[cfg(feature = "std")]
+use std::path::Path;
+
+use log::warn;
+
+use crate::math::rotation::{r1, r2, r3, Quaternion, DCM};
+use crate::math::Matrix3;
+use crate::naif::kpl::fk::FKItem;
+use crate::naif::kpl::Parameter;
+use crate::structure::dataset::{DataSetError, DataSetType};
+use crate::structure::metadata::Metadata;
+use crate::structure::EulerParameterDataSet;
+
+use super::KPLValue;
 
 #[derive(Debug, PartialEq, Eq)]
 enum BlockType {
@@ -80,6 +97,7 @@ impl Assignment {
     }
 }
 
+#[cfg(feature = "std")]
 pub fn parse_file<P: AsRef<Path> + fmt::Debug, I: KPLItem>(
     file_path: P,
     show_comments: bool,
@@ -90,6 +108,7 @@ pub fn parse_file<P: AsRef<Path> + fmt::Debug, I: KPLItem>(
     parse_bytes(&mut reader, show_comments)
 }
 
+#[cfg(feature = "std")]
 pub fn parse_bytes<R: BufRead, I: KPLItem>(
     reader: &mut R,
     show_comments: bool,
@@ -113,6 +132,7 @@ pub fn parse_bytes<R: BufRead, I: KPLItem>(
         }
 
         if block_type == BlockType::Comment && show_comments {
+            #[cfg(feature = "std")]
             println!("{line}");
         } else if block_type == BlockType::Data {
             let parts: Vec<&str> = line.split('=').map(|s| s.trim()).collect();
@@ -120,8 +140,8 @@ pub fn parse_bytes<R: BufRead, I: KPLItem>(
                 let keyword = parts[0];
                 let value = parts[1];
                 let assignment = Assignment {
-                    keyword: keyword.to_string(),
-                    value: value.to_string(),
+                    keyword: alloc::string::String::from(keyword),
+                    value: alloc::string::String::from(value),
                 };
                 assignments.push(assignment);
             } else if let Some(mut assignment) = assignments.pop() {
@@ -149,6 +169,7 @@ pub fn parse_bytes<R: BufRead, I: KPLItem>(
 
 /// Converts two KPL/TPC files, one defining the planetary constants as text, and the other defining the gravity parameters, into the PlanetaryDataSet equivalent ANISE file.
 /// KPL/TPC files must be converted into "PCA" (Planetary Constant ANISE) files before being loaded into ANISE.
+#[cfg(feature = "std")]
 pub fn convert_tpc<P: AsRef<Path> + fmt::Debug>(
     pck: P,
     gm: P,
@@ -158,6 +179,7 @@ pub fn convert_tpc<P: AsRef<Path> + fmt::Debug>(
     convert_tpc_items(planetary_data, gravity_data)
 }
 
+#[cfg(feature = "std")]
 pub fn convert_tpc_items(
     mut planetary_data: HashMap<i32, TPCItem>,
     gravity_data: HashMap<i32, TPCItem>,
@@ -229,7 +251,7 @@ pub fn convert_tpc_items(
                                             .data
                                             .get(&Parameter::PoleDec)
                                             .ok_or(DataSetError::Conversion {
-                                                action: "missing PoleDec parameter".to_owned(),
+                                                action: "missing PoleDec parameter".into(),
                                             })?;
                                         let mut pola_dec_data: Vec<f64> = pole_dec_data
                                             .to_vec_f64()
@@ -252,7 +274,7 @@ pub fn convert_tpc_items(
                                             .get(&Parameter::PrimeMeridian)
                                             .ok_or(DataSetError::Conversion {
                                                 action: "missing PrimeMeridian parameter"
-                                                    .to_owned(),
+                                                    .into(),
                                             })?;
                                         let mut prime_mer_data: Vec<f64> = prime_mer_data
                                         .to_vec_f64()
@@ -341,7 +363,7 @@ pub fn convert_tpc_items(
 
                                     if deg == 0 {
                                         return Err(DataSetError::Conversion {
-                                            action: "PhaseDegree must be non-zero".to_owned(),
+                                            action: "PhaseDegree must be non-zero".into(),
                                         });
                                     }
 
@@ -416,6 +438,7 @@ pub fn convert_tpc_items(
 
 /// Converts a KPL/FK file, that defines frame constants like fixed rotations, and frame name to ID mappings into the EulerParameterDataSet equivalent ANISE file.
 /// KPL/FK files must be converted into "PCA" (Planetary Constant ANISE) files before being loaded into ANISE.
+#[cfg(feature = "std")]
 pub fn convert_fk<P: AsRef<Path> + fmt::Debug>(
     fk_file_path: P,
     show_comments: bool,
@@ -437,7 +460,7 @@ pub fn convert_fk_items(
         {
             let mut warn = false;
             if let Some(class) = item.data.get(&Parameter::Class) {
-                let class_val = class.to_i32().map_err(|_| DataSetError::Conversion {
+                let class_val = KPLValue::to_i32(class).map_err(|_| DataSetError::Conversion {
                     action: format!("Class must be an Integer but was {class:?}"),
                 })?;
                 if class_val == 2 {
@@ -461,10 +484,10 @@ pub fn convert_fk_items(
                 .ok_or(DataSetError::Conversion {
                     action: format!("no unit data for FK ID {id}"),
                 })?;
-            let mut angle_data = angles.to_vec_f64().map_err(|_| DataSetError::Conversion {
+            let mut angle_data: alloc::vec::Vec<f64> = KPLValue::to_vec_f64(angles).map_err(|_| DataSetError::Conversion {
                 action: format!("Angle data must be a Matrix but was {angles:?}"),
             })?;
-            if unit == &KPLValue::String("ARCSECONDS".to_string()) {
+            if unit == &KPLValue::String(alloc::string::String::from("ARCSECONDS")) {
                 // Convert the angles data into degrees
                 for item in &mut angle_data {
                     *item /= 3600.0;
@@ -476,13 +499,13 @@ pub fn convert_fk_items(
                 .data
                 .get(&Parameter::Center)
                 .ok_or(DataSetError::Conversion {
-                    action: "missing Center parameter".to_owned(),
+                    action: "missing Center parameter".into(),
                 })?;
             let to = to.to_i32().map_err(|_| DataSetError::Conversion {
                 action: format!("Center parameter must be an Integer but was {to:?}"),
             })?;
             if let Some(class) = item.data.get(&Parameter::Class) {
-                let class_val = class.to_i32().map_err(|_| DataSetError::Conversion {
+                let class_val = KPLValue::to_i32(class).map_err(|_| DataSetError::Conversion {
                     action: format!("Class must be an Integer but was {class:?}"),
                 })?;
                 if class_val == 4 {
@@ -510,7 +533,7 @@ pub fn convert_fk_items(
                 .data
                 .get(&Parameter::Axes)
                 .ok_or(DataSetError::Conversion {
-                    action: "Missing Axes parameter".to_owned(),
+                    action: "Missing Axes parameter".into(),
                 })?;
             let axes = axes.to_vec_f64().map_err(|_| DataSetError::Conversion {
                 action: format!("Axes must be a Matrix but was {axes:?}"),
@@ -528,11 +551,11 @@ pub fn convert_fk_items(
 
             for (i, rot) in axes.iter().enumerate() {
                 let this_dcm = if rot == &1.0 {
-                    r1(angle_data[i].to_radians())
+                    r1((angle_data[i] as f64).to_radians())
                 } else if rot == &2.0 {
-                    r2(angle_data[i].to_radians())
+                    r2((angle_data[i] as f64).to_radians())
                 } else {
-                    r3(angle_data[i].to_radians())
+                    r3((angle_data[i] as f64).to_radians())
                 };
                 dcm *= this_dcm;
             }
@@ -547,7 +570,7 @@ pub fn convert_fk_items(
 
             dataset.push(q, Some(id), item.name.as_deref())?;
         } else if let Some(matrix) = item.data.get(&Parameter::Matrix) {
-            let mat_data = matrix.to_vec_f64().map_err(|_| DataSetError::Conversion {
+            let mat_data: alloc::vec::Vec<f64> = KPLValue::to_vec_f64(matrix).map_err(|_| DataSetError::Conversion {
                 action: format!("Matrix parameter must be a Matrix but was {matrix:?}"),
             })?;
             if mat_data.len() != 9 {
@@ -570,9 +593,9 @@ pub fn convert_fk_items(
                 .data
                 .get(&Parameter::Center)
                 .ok_or(DataSetError::Conversion {
-                    action: "missing Center parameter".to_owned(),
+                    action: "missing Center parameter".into(),
                 })?;
-            let to = center.to_i32().map_err(|_| DataSetError::Conversion {
+            let to = KPLValue::to_i32(center).map_err(|_| DataSetError::Conversion {
                 action: format!("Center parameter must be an Integer but was {center:?}"),
             })?;
 

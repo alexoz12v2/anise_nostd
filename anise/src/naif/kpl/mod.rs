@@ -1,3 +1,6 @@
+
+
+use crate::naif::kpl::parser::Assignment;
 /*
  * ANISE Toolkit
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
@@ -7,14 +10,15 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
 use core::str::FromStr;
-use std::fmt::Debug;
-use std::{collections::HashMap, hash::Hash};
-
-use snafu::{whatever, Whatever};
-
-use self::parser::Assignment;
+use core::fmt::Debug;
+use crate::HashMap;
+use core::hash::Hash;
 
 pub mod fk;
 
@@ -38,24 +42,24 @@ pub enum KPLValue {
 }
 
 impl KPLValue {
-    pub fn to_vec_f64(&self) -> Result<Vec<f64>, Whatever> {
+    pub fn to_vec_f64(&self) -> Result<alloc::vec::Vec<f64>, alloc::string::String> {
         match self {
             KPLValue::Matrix(data) => Ok(data.clone()),
-            _ => whatever!("can only convert matrices to vec of f64 but this is {self:?}"),
+            _ => Err(alloc::format!("can only convert matrices to vec of f64 but this is {self:?}")),
         }
     }
 
-    pub fn to_i32(&self) -> Result<i32, Whatever> {
+    pub fn to_i32(&self) -> Result<i32, alloc::string::String> {
         match self {
             KPLValue::Integer(data) => Ok(*data),
-            _ => whatever!("can only convert Integer to i32 but this is {self:?}"),
+            _ => Err(alloc::format!("can only convert Integer to i32 but this is {self:?}")),
         }
     }
 
-    pub fn to_string(&self) -> Result<String, Whatever> {
+    pub fn to_string(&self) -> Result<alloc::string::String, alloc::string::String> {
         match self {
             KPLValue::String(data) => Ok(data.clone()),
-            _ => whatever!("can only convert Integer to i32 but this is {self:?}"),
+            _ => Err(alloc::format!("can only convert Integer to i32 but this is {self:?}")),
         }
     }
 }
@@ -79,12 +83,12 @@ impl From<String> for KPLValue {
 }
 
 impl TryFrom<&KPLValue> for f64 {
-    type Error = Whatever;
+    type Error = alloc::string::String;
 
     fn try_from(value: &KPLValue) -> Result<Self, Self::Error> {
         match value {
             KPLValue::Float(data) => Ok(*data),
-            _ => whatever!("can only convert float to f64 but this is {value:?}"),
+            _ => Err(alloc::format!("can only convert float to f64 but this is {value:?}")),
         }
     }
 }
@@ -116,7 +120,7 @@ pub enum Parameter {
 }
 
 impl FromStr for Parameter {
-    type Err = Whatever;
+    type Err = alloc::string::String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -142,10 +146,10 @@ impl FromStr for Parameter {
             "AXES" => Ok(Self::Axes),
             "MAX_PHASE_DEGREE" => Ok(Self::MaxPhaseDegree),
             "GMLIST" | "NAME" | "SPEC" => {
-                whatever!("unsupported parameter `{s}`")
+                Err(alloc::format!("unsupported parameter `{s}`"))
             }
             _ => {
-                whatever!("unknown parameter `{s}`")
+                Err(alloc::format!("unknown parameter `{s}`"))
             }
         }
     }

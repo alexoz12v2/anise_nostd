@@ -255,7 +255,7 @@ mod ut_datatype {
                 }
             };
 
-            assert_eq!(data_type.to_string(), expected);
+            assert_eq!(alloc::string::String::from(data_type), expected);
         }
     }
 }

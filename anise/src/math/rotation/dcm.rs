@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use crate::{
     astro::PhysicsResult,
@@ -401,8 +402,8 @@ impl Mul<&CartesianState> for DCM {
         let new_state = self.state_dcm() * rhs.to_cartesian_pos_vel();
 
         let mut rslt = *rhs;
-        rslt.radius_km = new_state.fixed_rows::<3>(0).to_owned().into();
-        rslt.velocity_km_s = new_state.fixed_rows::<3>(3).to_owned().into();
+        rslt.radius_km = new_state.fixed_rows::<3>(0).into_owned();
+        rslt.velocity_km_s = new_state.fixed_rows::<3>(3).into_owned();
         rslt.frame.orientation_id = self.to;
 
         Ok(rslt)
@@ -552,7 +553,7 @@ impl fmt::Display for DCM {
             self.rot_mat_dt.is_some(),
             self.rot_mat,
             match self.rot_mat_dt {
-                None => "None".to_string(),
+                None => alloc::string::String::from("None"),
                 Some(dcm_dt) => format!("{dcm_dt}"),
             }
         )

@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use core::fmt;
 use hifitime::{Duration, Epoch, TimeUnits};

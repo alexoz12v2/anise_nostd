@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use super::utils::mean_anomaly_to_true_anomaly_rad;
 use super::PhysicsResult;

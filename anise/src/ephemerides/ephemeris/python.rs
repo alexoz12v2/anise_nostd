@@ -36,9 +36,9 @@ impl Ephemeris {
     #[getter]
     fn get_interpolation(&self) -> String {
         match self.interpolation {
-            DataType::Type9LagrangeUnequalStep => "LAGRANGE".to_string(),
+            DataType::Type9LagrangeUnequalStep => alloc::string::String::from("LAGRANGE"),
             DataType::Type13HermiteUnequalStep | DataType::Type12HermiteEqualStep => {
-                "HERMITE".to_string()
+                alloc::string::String::from("HERMITE")
             }
             _ => unreachable!(),
         }

@@ -7,8 +7,9 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
-use std::f64::consts::{PI, TAU};
+use core::f64::consts::{PI, TAU};
 
 use crate::errors::{MathError, PhysicsError};
 
@@ -591,7 +592,7 @@ mod ut_utils {
         let res = true_anomaly_to_mean_anomaly_rad(nu, ecc);
         f64_eq_tol!(
             res.unwrap(),
-            m_expected_non_normalized.rem_euclid(TAU),
+            m_expected_non_normalized.rem_euclid(core::f64::consts::TAU),
             TEST_EPS,
             ""
         );
@@ -603,7 +604,7 @@ mod ut_utils {
         let res2 = true_anomaly_to_mean_anomaly_rad(nu2, ecc);
         f64_eq_tol!(
             res2.unwrap(),
-            m2_expected_non_normalized.rem_euclid(TAU),
+            m2_expected_non_normalized.rem_euclid(core::f64::consts::TAU),
             TEST_EPS,
             ""
         );

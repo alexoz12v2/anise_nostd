@@ -87,7 +87,7 @@ pub mod celestial_objects {
             "Neptune Barycenter" => Ok(NEPTUNE_BARYCENTER),
             "Pluto Barycenter" => Ok(PLUTO_BARYCENTER),
             _ => Err(EphemerisError::NameToId {
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
             }),
         }
     }
@@ -313,7 +313,7 @@ pub mod orientations {
             "IAU_NEPTUNE" => Ok(IAU_NEPTUNE),
             "IAU_URANUS" => Ok(IAU_URANUS),
             _ => Err(OrientationError::OrientationNameToId {
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
             }),
         }
     }

@@ -7,8 +7,8 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Euclid;
 
-use std::f64::consts::TAU;
 
 /// Returns the provided angle bounded between 0.0 and 360.0.
 ///
@@ -20,7 +20,7 @@ use std::f64::consts::TAU;
 ///
 /// * `angle` - An angle in degrees.
 pub fn between_0_360(angle: f64) -> f64 {
-    angle.rem_euclid(360.0)
+    num_traits::Euclid::rem_euclid(&angle, &360.0)
 }
 
 /// Returns the provided angle bounded between 0.0 and 2 PI (TAU).
@@ -31,7 +31,7 @@ pub fn between_0_360(angle: f64) -> f64 {
 ///
 /// * `angle_rad` - An angle in radians.
 pub fn between_0_tau(angle_rad: f64) -> f64 {
-    angle_rad.rem_euclid(TAU)
+    angle_rad.rem_euclid(&core::f64::consts::TAU)
 }
 /// Returns the provided angle bounded between -180.0 and +180.0
 pub fn between_pm_180(angle: f64) -> f64 {
@@ -49,7 +49,8 @@ pub fn between_pm_180(angle: f64) -> f64 {
 /// * `angle` - An angle in degrees or radians.
 /// * `x` - The boundary for the angle normalization.
 pub fn between_pm_x(angle: f64, x: f64) -> f64 {
-    let mut bounded = angle.rem_euclid(2.0 * x);
+    let bound_val = 2.0 * x;
+    let mut bounded = angle.rem_euclid(&bound_val);
     if bounded >= x {
         bounded -= 2.0 * x;
     }

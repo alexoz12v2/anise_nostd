@@ -7,6 +7,8 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
 use crate::errors::DecodingError;
 use bytes::Bytes;
 use core::fmt;
@@ -64,7 +66,7 @@ impl Default for Metadata {
         Self {
             anise_version: ANISE_VERSION,
             dataset_type: DataSetType::NotApplicable,
-            creation_date: Epoch::now().unwrap(),
+            creation_date: Epoch::from_gregorian_tai_at_midnight(2000, 1, 1),
             originator: Default::default(),
         }
     }

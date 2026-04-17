@@ -50,7 +50,7 @@ impl Almanac {
             source: DataSetError::DataSetLut {
                 action: "seeking location by name",
                 source: LutError::UnknownName {
-                    name: name.to_string(),
+                    name: alloc::string::String::from(name),
                 },
             },
         })

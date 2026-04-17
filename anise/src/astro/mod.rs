@@ -8,7 +8,7 @@
  * Documentation: https://nyxspace.com/
  */
 
-use std::fmt::Display;
+use core::fmt::Display;
 
 use crate::errors::PhysicsError;
 use crate::frames::Frame;
@@ -254,9 +254,9 @@ impl AzElRange {
 }
 
 impl Display for AzElRange {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let obs = match self.obstructed_by {
-            None => "none".to_string(),
+            None => alloc::string::String::from("none"),
             Some(frame) => format!("{frame:e}"),
         };
         write!(

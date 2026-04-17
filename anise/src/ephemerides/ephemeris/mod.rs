@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use super::{EphemerisError, EphemerisPhysicsSnafu, OEMTimeParsingSnafu};
 use crate::ephemerides::EphemInterpolationSnafu;
@@ -497,7 +498,7 @@ impl Ephemeris {
 }
 
 impl fmt::Display for Ephemeris {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         if self.state_data.is_empty() {
             write!(f, "empty ephem for {}", self.object_id)
         } else {

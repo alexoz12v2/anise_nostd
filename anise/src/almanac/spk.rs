@@ -7,8 +7,12 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
-use std::collections::HashMap;
+use crate::HashMap;
 
 use hifitime::Epoch;
 
@@ -43,7 +47,7 @@ impl Almanac {
     pub fn with_spk_as(mut self, spk: SPK, alias: Option<String>) -> Self {
         // For lifetime reasons, we format the message using a ref first.
         // This message is only displayed if there was something with that name before.
-        let alias = alias.unwrap_or(Epoch::now().unwrap_or_default().to_string());
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
         let msg = format!("unloading SPK `{alias}`");
         if self.spk_data.insert(alias, spk).is_some() {
             warn!("{msg}");
@@ -56,7 +60,7 @@ impl Almanac {
     pub fn spk_unload(&mut self, alias: &str) -> Result<(), EphemerisError> {
         if self.spk_data.swap_remove(alias).is_none() {
             Err(EphemerisError::AliasNotFound {
-                alias: alias.to_string(),
+                alias: alloc::string::String::from(alias),
                 action: "unload ephemeris",
             })
         } else {
@@ -95,7 +99,7 @@ impl Almanac {
             action: "searching for SPK summary",
             source: DAFError::SummaryNameAtEpochError {
                 kind: "SPK",
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
                 epoch,
             },
         })
@@ -159,7 +163,7 @@ impl Almanac {
             action: "searching for SPK summary",
             source: DAFError::SummaryNameError {
                 kind: "SPK",
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
             },
         })
     }
@@ -291,7 +295,7 @@ mod ut_almanac_spk {
     #[test]
     fn summaries_nothing_loaded() {
         let almanac = Almanac::default();
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
 
         assert!(
             almanac.spk_summary(0).is_err(),
@@ -316,7 +320,7 @@ mod ut_almanac_spk {
     #[test]
     fn queries_nothing_loaded() {
         let almanac = Almanac::default();
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
 
         assert!(
             almanac.try_find_ephemeris_root().is_err(),

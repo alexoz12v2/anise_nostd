@@ -43,7 +43,7 @@ impl MetaAlmanac {
     pub fn new(path: &str) -> Result<Self, MetaAlmanacError> {
         match serde_dhall::from_file(path).parse::<Self>() {
             Err(e) => Err(MetaAlmanacError::ParseDhall {
-                path: path.to_string(),
+                path: alloc::string::String::from(path),
                 err: format!("{e}"),
             }),
             Ok(me) => Ok(me),

@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use crate::{
     astro::Aberration, constants::frames::SUN_J2000, ephemerides::EphemerisError, prelude::Frame,

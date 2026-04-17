@@ -7,14 +7,18 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 use super::dataset::DataSetT;
 use super::SpacecraftDataSet;
 use der::{Decode, Encode, Reader, Writer};
 pub use drag::DragData;
 pub use inertia::Inertia;
 pub use mass::Mass;
-use serde::{Deserialize, Serialize};
 pub use srp::SRPData;
+#[cfg(feature = "std")]
 use tabled::{settings::Style, Table, Tabled};
 
 mod drag;
@@ -23,7 +27,8 @@ mod mass;
 mod srp;
 
 /// Spacecraft constants can store the some of the spacecraft constant data as the CCSDS Orbit Parameter Message (OPM) and CCSDS Attitude Parameter Messages (APM)
-#[derive(Copy, Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Default, Debug, PartialEq)]
+#[cfg_attr(feature = "std", derive(serde_derive::Serialize, serde_derive::Deserialize))]
 pub struct SpacecraftData {
     /// Mass of the spacecraft in kg
     pub mass: Option<Mass>,
@@ -123,19 +128,20 @@ impl<'a> Decode<'a> for SpacecraftData {
     }
 }
 
-#[derive(Tabled, Default)]
+#[derive(Default)]
+#[cfg_attr(feature = "std", derive(Tabled))]
 struct SpacecraftRow {
-    #[tabled(rename = "Name")]
+    #[cfg_attr(feature = "std", tabled(rename = "Name"))]
     name: String,
-    #[tabled(rename = "ID")]
+    #[cfg_attr(feature = "std", tabled(rename = "ID"))]
     id: String,
-    #[tabled(rename = "Mass")]
+    #[cfg_attr(feature = "std", tabled(rename = "Mass"))]
     mass: String,
-    #[tabled(rename = "SRP")]
+    #[cfg_attr(feature = "std", tabled(rename = "SRP"))]
     srp: String,
-    #[tabled(rename = "Drag")]
+    #[cfg_attr(feature = "std", tabled(rename = "Drag"))]
     drag: String,
-    #[tabled(rename = "Inertia")]
+    #[cfg_attr(feature = "std", tabled(rename = "Inertia"))]
     inertia: String,
 }
 
@@ -155,17 +161,17 @@ impl SpacecraftDataSet {
             let data = if let Some(id) = opt_id {
                 self.get_by_id(*id).unwrap()
             } else {
-                self.get_by_name(&opt_name.clone().unwrap()).unwrap()
+                self.get_by_name(opt_name.as_ref().unwrap().as_str()).unwrap()
             };
 
             let row = SpacecraftRow {
                 name: match opt_name {
-                    Some(name) => name.clone(),
-                    None => "Unset".to_string(),
+                    Some(name) => alloc::string::String::from(name.as_str()),
+                    None => alloc::string::String::from("Unset"),
                 },
                 id: match opt_id {
                     Some(id) => format!("{id}"),
-                    None => "Unset".to_string(),
+                    None => alloc::string::String::from("Unset"),
                 },
                 mass: format!("{:?}", data.mass),
                 srp: format!("{:?}", data.srp_data),
@@ -176,9 +182,14 @@ impl SpacecraftDataSet {
             rows.push(row);
         }
 
-        let mut tbl = Table::new(rows);
-        tbl.with(Style::modern());
-        format!("{tbl}")
+        #[cfg(feature = "std")]
+        {
+            let mut tbl = Table::new(rows);
+            tbl.with(Style::modern());
+            format!("{tbl}")
+        }
+        #[cfg(not(feature = "std"))]
+        alloc::string::String::from("Tabled output unavailable without std feature")
     }
 }
 

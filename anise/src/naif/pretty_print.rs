@@ -1,43 +1,50 @@
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
 use hifitime::{Duration, TimeScale, Unit};
+#[cfg(feature = "std")]
+#[cfg(feature = "std")]
+#[cfg(feature = "std")]
 use tabled::{settings::Style, Table, Tabled};
 
 use crate::naif::daf::NAIFSummaryRecord;
 
 use super::{BPC, SPK};
 
-#[derive(Tabled)]
+#[cfg_attr(feature = "std", derive(Tabled))]
 pub struct BpcRow {
-    #[tabled(rename = "Name")]
+    #[cfg_attr(feature = "std", tabled(rename = "Name"))]
     pub name: String,
-    #[tabled(rename = "Start epoch")]
+    #[cfg_attr(feature = "std", tabled(rename = "Start epoch"))]
     pub start_epoch: String,
-    #[tabled(rename = "End epoch")]
+    #[cfg_attr(feature = "std", tabled(rename = "End epoch"))]
     pub end_epoch: String,
-    #[tabled(rename = "Duration")]
+    #[cfg_attr(feature = "std", tabled(rename = "Duration"))]
     pub duration: Duration,
-    #[tabled(rename = "Interpolation kind")]
+    #[cfg_attr(feature = "std", tabled(rename = "Interpolation kind"))]
     pub interpolation_kind: String,
-    #[tabled(rename = "Frame")]
+    #[cfg_attr(feature = "std", tabled(rename = "Frame"))]
     pub frame: String,
-    #[tabled(rename = "Inertial frame")]
+    #[cfg_attr(feature = "std", tabled(rename = "Inertial frame"))]
     pub inertial_frame: String,
 }
 
-#[derive(Tabled)]
+#[cfg_attr(feature = "std", derive(Tabled))]
 pub struct SpkRow {
-    #[tabled(rename = "Name")]
+    #[cfg_attr(feature = "std", tabled(rename = "Name"))]
     pub name: String,
-    #[tabled(rename = "Target")]
+    #[cfg_attr(feature = "std", tabled(rename = "Target"))]
     pub target: String,
-    #[tabled(rename = "Center")]
+    #[cfg_attr(feature = "std", tabled(rename = "Center"))]
     pub center: String,
-    #[tabled(rename = "Start epoch")]
+    #[cfg_attr(feature = "std", tabled(rename = "Start epoch"))]
     pub start_epoch: String,
-    #[tabled(rename = "End epoch")]
+    #[cfg_attr(feature = "std", tabled(rename = "End epoch"))]
     pub end_epoch: String,
-    #[tabled(rename = "Duration")]
+    #[cfg_attr(feature = "std", tabled(rename = "Duration"))]
     pub duration: Duration,
-    #[tabled(rename = "Interpolation kind")]
+    #[cfg_attr(feature = "std", tabled(rename = "Interpolation kind"))]
     pub interpolation_kind: String,
 }
 
@@ -72,12 +79,9 @@ impl NAIFPrettyPrint for BPC {
                     continue;
                 }
                 rows.push(BpcRow {
-                    name: name.to_string(),
-                    start_epoch: summary
-                        .start_epoch()
-                        .to_gregorian_str(time_scale)
-                        .to_string(),
-                    end_epoch: summary.end_epoch().to_gregorian_str(time_scale).to_string(),
+                    name: alloc::string::String::from(name),
+                    start_epoch: alloc::format!("{}", summary.start_epoch()),
+                    end_epoch: alloc::format!("{}", summary.end_epoch()),
                     duration: (summary.end_epoch() - summary.start_epoch()).round(round_value),
                     interpolation_kind: summary.data_type().unwrap().to_string(),
                     frame: format!("{}", summary.frame_id),
@@ -93,9 +97,14 @@ impl NAIFPrettyPrint for BPC {
             }
         }
 
-        let mut tbl = Table::new(rows);
-        tbl.with(Style::modern());
-        format!("{tbl}")
+        #[cfg(feature = "std")]
+        {
+            let mut tbl = Table::new(rows);
+            tbl.with(Style::modern());
+            format!("{tbl}")
+        }
+        #[cfg(not(feature = "std"))]
+        alloc::string::String::from("Tabled output unavailable without std feature")
     }
 }
 
@@ -123,13 +132,10 @@ impl NAIFPrettyPrint for SPK {
                 }
 
                 rows.push(SpkRow {
-                    name: name.to_string(),
+                    name: alloc::string::String::from(name),
                     center: summary.center_frame_uid().to_string(),
-                    start_epoch: summary
-                        .start_epoch()
-                        .to_gregorian_str(time_scale)
-                        .to_string(),
-                    end_epoch: summary.end_epoch().to_gregorian_str(time_scale).to_string(),
+                    start_epoch: alloc::format!("{}", summary.start_epoch()),
+                    end_epoch: alloc::format!("{}", summary.end_epoch()),
                     duration: (summary.end_epoch() - summary.start_epoch()).round(round_value),
                     interpolation_kind: summary.data_type().unwrap().to_string(),
                     target: summary.target_frame_uid().to_string(),
@@ -143,8 +149,13 @@ impl NAIFPrettyPrint for SPK {
                 }
             }
         }
-        let mut tbl = Table::new(rows);
-        tbl.with(Style::sharp());
-        format!("{tbl}")
+        #[cfg(feature = "std")]
+        {
+            let mut tbl = Table::new(rows);
+            tbl.with(Style::sharp());
+            format!("{tbl}")
+        }
+        #[cfg(not(feature = "std"))]
+        alloc::string::String::from("Tabled output unavailable without std feature")
     }
 }

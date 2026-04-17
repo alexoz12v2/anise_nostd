@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use hifitime::{Duration, Unit};
 use log::error;
@@ -270,7 +271,7 @@ impl Almanac {
         let cos_theta = u.dot(&state.r_hat());
 
         let theta_rad = sin_theta.atan2(cos_theta);
-        let lst_h = (theta_rad / PI * 12.0 + 6.0).rem_euclid(24.0);
+        let lst_h = num_traits::Euclid::rem_euclid(&(theta_rad / PI * 12.0 + 6.0), &(24.0));
 
         Ok(Unit::Hour * lst_h)
     }
@@ -290,7 +291,7 @@ impl Almanac {
         let raan_orbit_deg = orbit.raan_deg().map_err(|e| AlmanacError::GenericError {
             err: format!("{e}"),
         })?;
-        let ltan = (12.0 + (raan_orbit_deg - ra_sun_deg) / 15.0).rem_euclid(24.0);
+        let ltan = num_traits::Euclid::rem_euclid(&(12.0 + (raan_orbit_deg - ra_sun_deg) / 15.0), &(24.0));
         Ok(Unit::Hour * ltan)
     }
 
@@ -304,7 +305,7 @@ impl Almanac {
     /// :rtype: Duration
     pub fn ltdn(&self, orbit: Orbit, ab_corr: Option<Aberration>) -> AlmanacResult<Duration> {
         let ltan_h = self.ltan(orbit, ab_corr)?.to_unit(Unit::Hour);
-        let ltdn_h = (ltan_h + 12.0).rem_euclid(24.0);
+        let ltdn_h = num_traits::Euclid::rem_euclid(&(ltan_h + 12.0), &(24.0));
         Ok(Unit::Hour * ltdn_h)
     }
 }

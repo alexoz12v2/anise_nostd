@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use crate::{
     almanac::Almanac,
@@ -142,7 +143,7 @@ impl Almanac {
 
                         for (expr, alias) in report.scalars.iter() {
                             data.insert(
-                                alias.clone().unwrap_or_else(|| expr.to_string()),
+                                alias.clone().unwrap_or_else(|| alloc::format!("{:?}", expr)),
                                 expr.evaluate(orbit, ab_corr, almanac),
                             );
                         }
@@ -175,7 +176,7 @@ impl Almanac {
                 if data.values().all(|res| res.is_err()) {
                     // All errors, no headers.
                     return Err(AnalysisError::AllScalarsFailed {
-                        spec: report.state_spec.to_string(),
+                        spec: alloc::format!("{}", report.state_spec),
                     });
                 }
 
@@ -1009,8 +1010,8 @@ mod ut_analysis {
         let eme2k = almanac.frame_info(EME2000).unwrap();
         let epoch = Epoch::from_gregorian_tai_at_midnight(2026, 1, 10);
         // Create ephemeris data from an arbitrary Earth orbit.
-        let mut ephem1 = Ephemeris::new("sc1".to_string());
-        let mut ephem2 = Ephemeris::new("sc2".to_string());
+        let mut ephem1 = Ephemeris::new(alloc::string::String::from("sc1"));
+        let mut ephem2 = Ephemeris::new(alloc::string::String::from("sc2"));
 
         let orbit0 =
             Orbit::try_keplerian_altitude(500.0, 1e-3, 32.0, 75.0, 85.0, 95.0, epoch, eme2k)

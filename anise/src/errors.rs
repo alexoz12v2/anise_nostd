@@ -1,3 +1,5 @@
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
 /*
  * ANISE Toolkit
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
@@ -7,6 +9,8 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
 use hifitime::Epoch;
 use snafu::prelude::*;
@@ -19,7 +23,16 @@ use crate::structure::semver::Semver;
 use crate::NaifId;
 use core::convert::From;
 use der::Error as DerError;
+#[cfg(feature = "std")]
 use std::io::ErrorKind as IOErrorKind;
+
+#[cfg(not(feature = "std"))]
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum IOErrorKind {
+    NotFound,
+    Other,
+}
+
 
 #[cfg(feature = "metaload")]
 use crate::almanac::metaload::MetaAlmanacError;

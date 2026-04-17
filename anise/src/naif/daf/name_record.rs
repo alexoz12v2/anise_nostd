@@ -82,7 +82,7 @@ impl NameRecord {
         }
         Err(DAFError::NameError {
             kind: R::NAME,
-            name: name.to_string(),
+            name: alloc::string::String::from(name),
         })
     }
 }

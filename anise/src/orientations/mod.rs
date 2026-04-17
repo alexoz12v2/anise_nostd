@@ -7,6 +7,8 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
 use hifitime::Epoch;
 use snafu::prelude::*;

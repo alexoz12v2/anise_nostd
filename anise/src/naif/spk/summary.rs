@@ -149,7 +149,7 @@ impl SPKSummaryRecord {
             "Neptune Barycenter" => Ok(8),
             "Pluto Barycenter" => Ok(9),
             _ => Err(EphemerisError::NameToId {
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
             }),
         }
     }

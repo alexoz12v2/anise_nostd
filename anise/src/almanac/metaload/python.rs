@@ -85,7 +85,7 @@ impl MetaAlmanac {
     #[pyo3(name = "to_dhall")]
     fn py_to_dhall(&self) -> Result<String, PyErr> {
         self.to_dhall()
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     /// Loads this Meta Almanac from its Dhall string representation
@@ -95,7 +95,7 @@ impl MetaAlmanac {
     #[classmethod]
     #[pyo3(name = "from_dhall")]
     fn py_from_dhall(_cls: Bound<'_, PyType>, repr: &str) -> Result<Self, PyErr> {
-        Self::from_dhall(repr).map_err(|e| PyException::new_err(e.to_string()))
+        Self::from_dhall(repr).map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     fn __str__(&self) -> String {

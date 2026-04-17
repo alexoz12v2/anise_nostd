@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use super::{AnalysisError, Event};
 use hifitime::{Epoch, Unit};

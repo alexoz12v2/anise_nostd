@@ -7,9 +7,10 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 use der::{Decode, Encode, Reader, Writer};
 use serde_derive::{Deserialize, Serialize};
-use std::ops::Sub;
+use core::ops::Sub;
 
 #[cfg(feature = "python")]
 use pyo3::exceptions::PyValueError;

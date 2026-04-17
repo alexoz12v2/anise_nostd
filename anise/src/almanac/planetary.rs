@@ -7,6 +7,14 @@
  *
  * Documentation: https://nyxspace.com/
  */
+
+#[cfg(feature = "std")]
+use hifitime::Epoch;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 use super::Almanac;
 use crate::{
     prelude::{Frame, FrameUid},
@@ -16,9 +24,11 @@ use crate::{
     },
     NaifId,
 };
-use hifitime::Epoch;
 use log::warn;
 use snafu::prelude::*;
+#[cfg(feature = "std")]
+#[cfg(feature = "std")]
+#[cfg(feature = "std")]
 use tabled::{settings::Style, Table, Tabled};
 
 #[derive(Debug, Snafu, PartialEq)]
@@ -114,7 +124,7 @@ impl Almanac {
     ) -> Self {
         // For lifetime reasons, we format the message using a ref first.
         // This message is only displayed if there was something with that name before.
-        let alias = alias.unwrap_or(Epoch::now().unwrap_or_default().to_string());
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
         let msg = format!("unloading planetary data `{alias}`");
         if self.planetary_data.insert(alias, planetary_data).is_some() {
             warn!("{msg}");
@@ -123,25 +133,26 @@ impl Almanac {
     }
 }
 
-#[derive(Tabled, Default)]
+#[derive(Default)]
+#[cfg_attr(feature = "std", derive(Tabled))]
 struct PlanetaryRow {
-    #[tabled(rename = "Name")]
+    #[cfg_attr(feature = "std", tabled(rename = "Name"))]
     name: String,
-    #[tabled(rename = "ID")]
+    #[cfg_attr(feature = "std", tabled(rename = "ID"))]
     id: String,
-    #[tabled(rename = "Gravity param (km^3/s^2)")]
+    #[cfg_attr(feature = "std", tabled(rename = "Gravity param (km^3/s^2)"))]
     gm: String,
-    #[tabled(rename = "Major axis (km)")]
+    #[cfg_attr(feature = "std", tabled(rename = "Major axis (km)"))]
     major_axis: String,
-    #[tabled(rename = "Minor axis (km)")]
+    #[cfg_attr(feature = "std", tabled(rename = "Minor axis (km)"))]
     minor_axis: String,
-    #[tabled(rename = "Polar axis (km)")]
+    #[cfg_attr(feature = "std", tabled(rename = "Polar axis (km)"))]
     polar_axis: String,
-    #[tabled(rename = "Pole right asc.")]
+    #[cfg_attr(feature = "std", tabled(rename = "Pole right asc."))]
     pole_ra: String,
-    #[tabled(rename = "Pole declination")]
+    #[cfg_attr(feature = "std", tabled(rename = "Pole declination"))]
     pole_decl: String,
-    #[tabled(rename = "Prime meridian")]
+    #[cfg_attr(feature = "std", tabled(rename = "Prime meridian"))]
     pm: String,
 }
 
@@ -161,34 +172,34 @@ impl PlanetaryDataSet {
             let data = if let Some(id) = opt_id {
                 self.get_by_id(*id).unwrap()
             } else {
-                self.get_by_name(&opt_name.clone().unwrap()).unwrap()
+                self.get_by_name(opt_name.as_ref().unwrap().as_str()).unwrap()
             };
 
             let mut row = PlanetaryRow {
                 name: match opt_name {
-                    Some(name) => name.clone(),
-                    None => "Unset".to_string(),
+                    Some(name) => alloc::string::String::from(name.as_str()),
+                    None => alloc::string::String::from("Unset"),
                 },
                 id: match opt_id {
                     Some(id) => format!("{id}"),
-                    None => "Unset".to_string(),
+                    None => alloc::string::String::from("Unset"),
                 },
                 gm: format!("{}", data.mu_km3_s2),
                 pole_ra: match data.pole_right_ascension {
-                    None => "Unset".to_string(),
+                    None => alloc::string::String::from("Unset"),
                     Some(pole_ra) => format!("{pole_ra}"),
                 },
                 pole_decl: match data.pole_declination {
-                    None => "Unset".to_string(),
+                    None => alloc::string::String::from("Unset"),
                     Some(pole_dec) => format!("{pole_dec}"),
                 },
                 pm: match data.prime_meridian {
-                    None => "Unset".to_string(),
+                    None => alloc::string::String::from("Unset"),
                     Some(pm) => format!("{pm}"),
                 },
-                major_axis: "Unset".to_string(),
-                minor_axis: "Unset".to_string(),
-                polar_axis: "Unset".to_string(),
+                major_axis: alloc::string::String::from("Unset"),
+                minor_axis: alloc::string::String::from("Unset"),
+                polar_axis: alloc::string::String::from("Unset"),
             };
 
             match data.shape {
@@ -205,8 +216,13 @@ impl PlanetaryDataSet {
             rows.push(row);
         }
 
-        let mut tbl = Table::new(rows);
-        tbl.with(Style::modern());
-        format!("{tbl}")
+        #[cfg(feature = "std")]
+        {
+            let mut tbl = Table::new(rows);
+            tbl.with(Style::modern());
+            format!("{tbl}")
+        }
+        #[cfg(not(feature = "std"))]
+        alloc::string::String::from("Tabled output unavailable without std feature")
     }
 }

@@ -7,6 +7,8 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 use super::{
     daf::DAF, DAFError, DecodingNameSnafu, NAIFDataSet, NAIFSummaryRecord, NameRecord, RCRD_LEN,

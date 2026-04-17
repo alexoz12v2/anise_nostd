@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use super::{OrbitalElement, ScalarExpr};
 use crate::{
@@ -263,7 +264,7 @@ impl Event {
     #[classmethod]
     #[pyo3(name = "from_s_expr")]
     fn py_from_s_expr(_cls: Bound<'_, PyType>, expr: &str) -> Result<Self, PyErr> {
-        Self::from_s_expr(expr).map_err(|e| PyException::new_err(e.to_string()))
+        Self::from_s_expr(expr).map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     /// Converts this Event to its S-Expression
@@ -271,7 +272,7 @@ impl Event {
     #[pyo3(name = "to_s_expr")]
     fn py_to_s_expr(&self) -> Result<String, PyErr> {
         self.to_s_expr()
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     #[classmethod]

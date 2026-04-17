@@ -7,6 +7,9 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 use crate::astro::PhysicsResult;
 use crate::errors::PhysicsError;
@@ -52,7 +55,7 @@ impl Default for FovShape {
 }
 
 impl fmt::Display for FovShape {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{self:?}")
     }
 }
@@ -333,7 +336,7 @@ impl DataSetT for Instrument {
 }
 
 impl fmt::Display for Instrument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         if self.offset_i.norm_squared() < f64::EPSILON {
             write!(f, "FOV of {}\tRotation: {}", self.fov, self.q_to_i)
         } else {

@@ -110,7 +110,7 @@ impl LocationDhallSet {
                         None => None,
                     },
                 )
-                .map_err(|e| e.to_string())?;
+                .map_err(|e| alloc::format!("{}", e))?;
         }
 
         Ok(dataset)
@@ -121,7 +121,7 @@ impl LocationDhallSet {
         let me: Self = serde_dhall::from_str(repr)
             .static_type_annotation()
             .parse()
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| alloc::format!("{}", e))?;
 
         Ok(me)
     }
@@ -131,7 +131,7 @@ impl LocationDhallSet {
         serde_dhall::serialize(&self)
             .static_type_annotation()
             .to_string()
-            .map_err(|e| e.to_string())
+            .map_err(|e| alloc::format!("{}", e))
     }
 }
 
@@ -196,7 +196,7 @@ impl LocationDhallSet {
         Ok(PyLocationDataSet {
             inner: self
                 .to_dataset()
-                .map_err(|e| PyException::new_err(e.to_string()))?,
+                .map_err(|e| PyException::new_err(alloc::format!("{}", e)))?,
         })
     }
 }
@@ -219,13 +219,13 @@ impl LocationDataSet {
 
         for (name, pos) in &self.lut.by_name {
             if let Some(entry) = many_me.get_mut(&pos) {
-                entry.alias = Some(name.to_string());
+                entry.alias = Some(alloc::string::String::from(name));
             } else {
                 many_me.insert(
                     pos,
                     LocationDhallSetEntry {
                         id: None,
-                        alias: Some(name.clone()),
+                        alias: Some(alloc::string::String::from(name.as_str())),
                         value: self.get_by_name(name).unwrap(),
                     },
                 );
@@ -262,9 +262,9 @@ impl PyLocationDataSet {
     #[classmethod]
     fn load(_cls: Bound<'_, PyType>, path: &str) -> Result<Self, PyErr> {
         let dataset = LocationDataSet::try_from_bytes(
-            file2heap!(path).map_err(|e| PyException::new_err(e.to_string()))?,
+            file2heap!(path).map_err(|e| PyException::new_err(alloc::format!("{}", e)))?,
         )
-        .map_err(|e| PyException::new_err(e.to_string()))?;
+        .map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
 
         Ok(Self { inner: dataset })
     }
@@ -279,7 +279,7 @@ impl PyLocationDataSet {
         self.inner.set_crc32();
         self.inner
             .save_as(&PathBuf::from(path), overwrite.unwrap_or_default())
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     /// Converts this location dataset into a manipulable location Dhall set.
@@ -288,7 +288,7 @@ impl PyLocationDataSet {
     fn to_dhallset(&self) -> Result<LocationDhallSet, PyErr> {
         self.inner
             .to_dhallset()
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 }
 
@@ -328,12 +328,12 @@ mod ut_loc_dhall {
             data: vec![
                 LocationDhallSetEntry {
                     id: Some(1),
-                    alias: Some("DSS65".to_string()),
+                    alias: Some(alloc::string::String::from("DSS65")),
                     value: dss65,
                 },
                 LocationDhallSetEntry {
                     id: None,
-                    alias: Some("Paris".to_string()),
+                    alias: Some(alloc::string::String::from("Paris")),
                     value: paris,
                 },
             ],

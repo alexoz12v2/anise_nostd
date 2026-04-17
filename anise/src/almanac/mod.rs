@@ -8,21 +8,38 @@
  * Documentation: https://nyxspace.com/
  */
 
-use bytes::{BufMut, BytesMut};
-use hifitime::{Epoch, TimeScale};
-use indexmap::IndexMap;
+#[cfg(feature = "std")]
+use bytes::BufMut;
+#[cfg(feature = "std")]
+use hifitime::Epoch;
+#[cfg(feature = "std")]
+use crate::naif::pretty_print::NAIFPrettyPrint;
+#[cfg(feature = "std")]
+use crate::prelude::InputOutputError;
+#[cfg(feature = "std")]
+use crate::errors::LoadingSnafu;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
+#[cfg(feature = "std")]
+use std::println;
+
+use bytes::BytesMut;
+use hifitime::TimeScale;
+use crate::IndexMap;
 use log::{info, warn};
 use snafu::ResultExt;
 use zerocopy::FromBytes;
 
 use crate::ephemerides::SPKSnafu;
 use crate::errors::{
-    AlmanacError, AlmanacResult, EphemerisSnafu, InputOutputError, LoadingSnafu, OrientationSnafu,
+    AlmanacError, AlmanacResult, EphemerisSnafu, OrientationSnafu,
     TLDataSetSnafu,
 };
 use crate::math::rotation::EulerParameter;
 use crate::naif::daf::{FileRecord, NAIFRecord};
-use crate::naif::pretty_print::NAIFPrettyPrint;
 use crate::naif::{BPC, SPK};
 use crate::orientations::{BPCSnafu, OrientationError};
 use crate::structure::dataset::{DataSetError, DataSetType};
@@ -110,6 +127,7 @@ impl fmt::Display for Almanac {
 
 impl Almanac {
     /// Initializes a new Almanac from the provided file path, guessing at the file type
+    #[cfg(feature = "std")]
     pub fn new(path: &str) -> AlmanacResult<Self> {
         Self::default().load(path)
     }
@@ -125,7 +143,7 @@ impl Almanac {
         spacecraft_data: SpacecraftDataSet,
         alias: Option<String>,
     ) -> Self {
-        let alias = alias.unwrap_or(Epoch::now().unwrap_or_default().to_string());
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
         let msg = format!("unloading spacecraft data `{alias}`");
         if self
             .spacecraft_data
@@ -148,7 +166,7 @@ impl Almanac {
         ep_dataset: EulerParameterDataSet,
         alias: Option<String>,
     ) -> Self {
-        let alias = alias.unwrap_or(Epoch::now().unwrap_or_default().to_string());
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
         let msg = format!("unloading Euler parameter data `{alias}`");
         if self.euler_param_data.insert(alias, ep_dataset).is_some() {
             warn!("{msg}");
@@ -167,7 +185,7 @@ impl Almanac {
         loc_dataset: LocationDataSet,
         alias: Option<String>,
     ) -> Self {
-        let alias = alias.unwrap_or(Epoch::now().unwrap_or_default().to_string());
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
         let msg = format!("unloading location data `{alias}`");
         if self.location_data.insert(alias, loc_dataset).is_some() {
             warn!("{msg}");
@@ -186,7 +204,7 @@ impl Almanac {
         dataset: InstrumentDataSet,
         alias: Option<String>,
     ) -> Self {
-        let alias = alias.unwrap_or(Epoch::now().unwrap_or_default().to_string());
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
         let msg = format!("unloading instrument data `{alias}`");
         if self.instrument_data.insert(alias, dataset).is_some() {
             warn!("{msg}");
@@ -209,7 +227,7 @@ impl Almanac {
             }
         }
 
-        let path_str = path.map_or_else(|| None, |p| Some(p.to_string()));
+        let path_str = path.map_or_else(|| None, |p| Some(alloc::string::String::from(p)));
 
         // Load the header only
         if let Some(file_record_bytes) = bytes.get(..FileRecord::SIZE) {
@@ -314,13 +332,14 @@ impl Almanac {
     }
 
     /// Generic function that tries to load the provided path guessing to the file type.
+    #[cfg(feature = "std")]
     pub fn load(self, path: &str) -> AlmanacResult<Self> {
         // Load the data onto the heap
         let bytes = match std::fs::read(path) {
             Err(e) => {
                 return Err(AlmanacError::Loading {
-                    path: path.to_string(),
-                    source: InputOutputError::IOError { kind: e.kind() },
+                    path: alloc::string::String::from(path),
+                    source: crate::errors::InputOutputError::IOError { kind: e.kind() },
                 })
             }
             Ok(bytes) => BytesMut::from(&bytes[..]),
@@ -360,6 +379,7 @@ impl Almanac {
 
         if spk.unwrap_or(!print_any) {
             for (spk_no, (alias, spk)) in self.spk_data.iter().rev().enumerate() {
+                #[cfg(feature = "std")]
                 println!(
                     "=== SPK #{spk_no}: `{alias}` ===\n{}",
                     spk.describe_in(time_scale.unwrap_or(TimeScale::TDB), round_time)
@@ -369,6 +389,7 @@ impl Almanac {
 
         if bpc.unwrap_or(!print_any) {
             for (bpc_no, (alias, bpc)) in self.bpc_data.iter().rev().enumerate() {
+                #[cfg(feature = "std")]
                 println!(
                     "=== BPC #{bpc_no}: `{alias}` ===\n{}",
                     bpc.describe_in(time_scale.unwrap_or(TimeScale::TDB), round_time)
@@ -378,6 +399,7 @@ impl Almanac {
 
         if planetary.unwrap_or(!print_any) {
             for (num, (alias, data)) in self.planetary_data.iter().rev().enumerate() {
+                #[cfg(feature = "std")]
                 println!(
                     "=== PLANETARY DATA #{num}: `{alias}` ===\n{}",
                     data.describe()
@@ -387,6 +409,7 @@ impl Almanac {
 
         if spacecraft.unwrap_or(!print_any) {
             for (num, (alias, data)) in self.spacecraft_data.iter().rev().enumerate() {
+                #[cfg(feature = "std")]
                 println!(
                     "=== SPACECRAFT DATA #{num}: `{alias}` ===\n{}",
                     data.describe()
@@ -396,6 +419,7 @@ impl Almanac {
 
         if eulerparams.unwrap_or(!print_any) {
             for (num, (alias, data)) in self.euler_param_data.iter().rev().enumerate() {
+                #[cfg(feature = "std")]
                 println!(
                     "=== EULER PARAMETER DATA #{num}: `{alias}` ===\n{}",
                     data.describe()
@@ -405,6 +429,7 @@ impl Almanac {
 
         if locations.unwrap_or(!print_any) {
             for (num, (alias, data)) in self.location_data.iter().rev().enumerate() {
+                #[cfg(feature = "std")]
                 println!(
                     "=== LOCATIONS DATA #{num}: `{alias}` ===\n{}",
                     data.describe()
@@ -473,6 +498,7 @@ impl Almanac {
     /// is larger than the previous capacity. This effectively adopts a
     /// "high watermark" memory strategy, where the memory usage for this slot
     /// is determined by the largest file ever loaded into it.
+#[cfg(feature = "std")]
     pub fn spk_swap(
         &mut self,
         alias: &str,
@@ -480,9 +506,9 @@ impl Almanac {
         new_alias: String,
     ) -> Result<(), AlmanacError> {
         let mut file = std::fs::File::open(new_spk_path)
-            .map_err(|e| InputOutputError::IOError { kind: e.kind() })
+            .map_err(|e| crate::errors::InputOutputError::IOError { kind: e.kind() })
             .context(LoadingSnafu {
-                path: new_spk_path.to_string(),
+                path: alloc::string::String::from(new_spk_path),
             })?;
 
         let file_len = file.metadata().map(|m| m.len()).unwrap_or(0);
@@ -503,9 +529,9 @@ impl Almanac {
         // .writer() adapts the BytesMut to implement std::io::Write
         let mut writer = buffer.writer();
         std::io::copy(&mut file, &mut writer)
-            .map_err(|e| InputOutputError::IOError { kind: e.kind() })
+            .map_err(|e| crate::errors::InputOutputError::IOError { kind: e.kind() })
             .context(LoadingSnafu {
-                path: new_spk_path.to_string(),
+                path: alloc::string::String::from(new_spk_path),
             })?;
 
         // 5. Handle Renaming
@@ -525,6 +551,8 @@ impl Almanac {
     /// is larger than the previous capacity. This effectively adopts a
     /// "high watermark" memory strategy, where the memory usage for this slot
     /// is determined by the largest file ever loaded into it.
+    #[cfg(feature = "std")]
+#[cfg(feature = "std")]
     pub fn bpc_swap(
         &mut self,
         alias: &str,
@@ -532,9 +560,9 @@ impl Almanac {
         new_alias: String,
     ) -> Result<(), AlmanacError> {
         let mut file = std::fs::File::open(new_bpc_path)
-            .map_err(|e| InputOutputError::IOError { kind: e.kind() })
+            .map_err(|e| crate::errors::InputOutputError::IOError { kind: e.kind() })
             .context(LoadingSnafu {
-                path: new_bpc_path.to_string(),
+                path: alloc::string::String::from(new_bpc_path),
             })?;
 
         let file_len = file.metadata().map(|m| m.len()).unwrap_or(0);
@@ -555,9 +583,9 @@ impl Almanac {
         // .writer() adapts the BytesMut to implement std::io::Write
         let mut writer = buffer.writer();
         std::io::copy(&mut file, &mut writer)
-            .map_err(|e| InputOutputError::IOError { kind: e.kind() })
+            .map_err(|e| crate::errors::InputOutputError::IOError { kind: e.kind() })
             .context(LoadingSnafu {
-                path: new_bpc_path.to_string(),
+                path: alloc::string::String::from(new_bpc_path),
             })?;
 
         // 5. Handle Renaming

@@ -1,3 +1,5 @@
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
 /*
  * ANISE Toolkit
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)

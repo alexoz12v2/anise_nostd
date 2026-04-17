@@ -7,8 +7,12 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
 use der::{asn1::OctetStringRef, Decode, Encode, Reader, Writer};
-use indexmap::IndexMap;
+use crate::IndexMap;
 use log::warn;
 use snafu::prelude::*;
 
@@ -46,7 +50,7 @@ pub struct LookUpTable {
 impl LookUpTable {
     pub fn append(&mut self, id: i32, name: &str, index: u32) -> Result<(), LutError> {
         self.by_id.insert(id, index);
-        self.by_name.insert(name.to_string(), index);
+        self.by_name.insert(alloc::string::String::from(name), index);
         Ok(())
     }
 
@@ -56,7 +60,7 @@ impl LookUpTable {
     }
 
     pub fn append_name(&mut self, name: &str, index: u32) -> Result<(), LutError> {
-        self.by_name.insert(name.to_string(), index);
+        self.by_name.insert(alloc::string::String::from(name), index);
         Ok(())
     }
 
@@ -64,7 +68,7 @@ impl LookUpTable {
     ///
     /// Performance: O(n+m) where n is the number of IDs and m number of names.
     pub fn entries(&self) -> IndexMap<u32, (Option<NaifId>, Option<String>)> {
-        let mut rtn = IndexMap::with_capacity(self.by_id.len() + self.by_name.len());
+        let mut rtn = IndexMap::default();
 
         for (id, entry) in &self.by_id {
             // IDs are unique, and this is the first iteration, so we can't be overwriting anything
@@ -74,10 +78,10 @@ impl LookUpTable {
         // Now map to the names
         for (name, entry) in &self.by_name {
             if !rtn.contains_key(entry) {
-                rtn.insert(*entry, (None, Some(name.clone())));
+                rtn.insert(*entry, (None::<NaifId>, Some(alloc::string::String::from(name.as_str()))));
             } else {
                 let val = rtn.get_mut(entry).unwrap();
-                val.1 = Some(name.clone());
+                val.1 = Some(alloc::string::String::from(name.as_str()));
             }
         }
 
@@ -114,11 +118,11 @@ impl LookUpTable {
     pub fn rename(&mut self, current_name: &str, new_name: &str) -> Result<(), LutError> {
         if let Some(entry) = self.by_name.swap_remove(current_name) {
             // We can unwrap the insertion because we just removed something.
-            self.by_name.insert(new_name.to_string(), entry);
+            self.by_name.insert(alloc::string::String::from(new_name), entry);
             Ok(())
         } else {
             Err(LutError::UnknownName {
-                name: current_name.to_string(),
+                name: alloc::string::String::from(current_name),
             })
         }
     }
@@ -129,7 +133,7 @@ impl LookUpTable {
     pub fn rmname(&mut self, name: &str) -> Result<(), LutError> {
         if self.by_name.swap_remove(name).is_none() {
             Err(LutError::UnknownName {
-                name: name.to_string(),
+                name: alloc::string::String::from(name),
             })
         } else {
             Ok(())

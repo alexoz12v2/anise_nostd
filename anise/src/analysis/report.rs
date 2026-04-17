@@ -71,7 +71,7 @@ impl PyReportScalars {
     #[pyo3(name = "from_s_expr")]
     fn py_from_s_expr(_cls: Bound<'_, PyType>, expr: &str) -> Result<Self, PyErr> {
         let inner = ReportScalars::<StateSpec>::from_s_expr(expr)
-            .map_err(|e| PyException::new_err(e.to_string()))?;
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
         Ok(Self { inner })
     }
 
@@ -81,7 +81,7 @@ impl PyReportScalars {
     fn py_to_s_expr(&self) -> Result<String, PyErr> {
         self.inner
             .to_s_expr()
-            .map_err(|e| PyException::new_err(e.to_string()))
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))
     }
 
     #[new]
@@ -134,11 +134,11 @@ impl ScalarsTable {
         wtr.write_record(None::<&[u8]>)?;
 
         for row in &self.rows {
-            wtr.write_field(row.epoch.to_string())?;
+            wtr.write_field(alloc::format!("{}", row.epoch))?;
 
             // Write all f64 values
             for value in &row.values {
-                wtr.write_field(value.to_string())?;
+                wtr.write_field(alloc::format!("{}", value))?;
             }
 
             // Finalize this data row

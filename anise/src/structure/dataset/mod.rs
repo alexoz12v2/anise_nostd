@@ -7,6 +7,8 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 use self::error::{DataDecodingSnafu, DataSetLutSnafu};
 use super::{
     lookuptable::{LookUpTable, LutError},
@@ -27,9 +29,13 @@ use snafu::prelude::*;
 
 macro_rules! io_imports {
     () => {
+        #[cfg(feature = "std")]
         use std::fs::File;
+        #[cfg(feature = "std")]
         use std::io::{Error as IOError, ErrorKind as IOErrorKind, Write};
+        #[cfg(feature = "std")]
         use std::path::Path;
+        #[cfg(feature = "std")]
         use std::path::PathBuf;
     };
 }
@@ -317,7 +323,7 @@ impl<T: DataSetT> DataSet<T> {
             Err(DataSetError::DataSetLut {
                 action: "fetching by name",
                 source: LutError::UnknownName {
-                    name: name.to_string(),
+                    name: alloc::string::String::from(name),
                 },
             })
         }
@@ -341,7 +347,7 @@ impl<T: DataSetT> DataSet<T> {
             Err(DataSetError::DataSetLut {
                 action: "setting by name",
                 source: LutError::UnknownName {
-                    name: name.to_string(),
+                    name: alloc::string::String::from(name),
                 },
             })
         }
@@ -388,6 +394,7 @@ impl<T: DataSetT> DataSet<T> {
 
     /// Saves this dataset to the provided file
     /// If overwrite is set to false, and the filename already exists, this function will return an error.
+    #[cfg(feature = "std")]
     pub fn save_as(&self, filename: &PathBuf, overwrite: bool) -> Result<(), DataSetError> {
         use log::{info, warn};
 

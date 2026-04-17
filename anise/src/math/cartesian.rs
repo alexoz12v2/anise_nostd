@@ -7,6 +7,7 @@
  *
  * Documentation: https://nyxspace.com/
  */
+use num_traits::Float;
 
 use super::{perp_vector, root_mean_squared, root_sum_squared, Vector3};
 use crate::{
@@ -21,7 +22,6 @@ use core::ops::{Add, Neg, Sub};
 use der::{Decode, Encode, Reader, Writer};
 use hifitime::{Duration, Epoch, TimeScale, TimeUnits};
 use nalgebra::Vector6;
-use serde_derive::{Deserialize, Serialize};
 use snafu::ensure;
 
 #[cfg(feature = "python")]
@@ -34,7 +34,8 @@ use pyo3::prelude::*;
 ///
 /// :type args: tuples
 /// :rtype: Orbit
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug)]
+#[cfg_attr(feature = "std", derive(serde_derive::Serialize, serde_derive::Deserialize))]
 #[cfg_attr(feature = "python", pyclass(name = "Orbit"))]
 #[cfg_attr(feature = "python", pyo3(module = "anise.astro"))]
 pub struct CartesianState {
@@ -631,7 +632,7 @@ mod cartesian_state_ut {
 
     #[test]
     fn test_der_encoding() {
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let frame = EARTH_J2000.with_mu_km3_s2(398600.4418);
         let state = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
 
@@ -646,7 +647,7 @@ mod cartesian_state_ut {
 
     #[test]
     fn add_wrong_epoch() {
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let e2 = e + 1.seconds();
         let frame = EARTH_J2000;
         let s1 = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
@@ -664,7 +665,7 @@ mod cartesian_state_ut {
 
     #[test]
     fn add_wrong_frame() {
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let frame = EARTH_J2000;
         let frame2 = VENUS_J2000;
         let s1 = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
@@ -682,7 +683,7 @@ mod cartesian_state_ut {
 
     #[test]
     fn add_nominal() {
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let frame = EARTH_J2000;
         let s1 = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
         let s2 = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
@@ -696,7 +697,7 @@ mod cartesian_state_ut {
 
     #[test]
     fn distance() {
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let frame = EARTH_J2000;
         let s1 = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
         let s2 = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
@@ -714,7 +715,7 @@ mod cartesian_state_ut {
 
     #[test]
     fn zeros() {
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let frame = EARTH_J2000;
         let s = CartesianState::zero(frame);
 
@@ -729,7 +730,7 @@ mod cartesian_state_ut {
 
     #[test]
     fn test_serde() {
-        let e = Epoch::now().unwrap();
+        let e = Epoch::from_gregorian_tai_at_midnight(2000, 1, 1);
         let frame = EARTH_J2000;
         let state = CartesianState::new(10.0, 20.0, 30.0, 1.0, 2.0, 2.0, e, frame);
 

@@ -7,6 +7,10 @@
  *
  * Documentation: https://nyxspace.com/
  */
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
 use crate::{
     errors::IntegrityError, math::interpolation::InterpolationError, prelude::InputOutputError,
@@ -46,7 +50,7 @@ pub trait NAIFRecord:
 }
 
 pub trait NAIFSummaryRecord: NAIFRecord + Copy + Immutable + KnownLayout {
-    type Error: 'static + std::error::Error;
+    type Error: 'static + core::error::Error;
 
     fn start_index(&self) -> usize;
     fn data_type(&self) -> Result<DafDataType, Self::Error>;
