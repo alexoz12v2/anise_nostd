@@ -213,8 +213,8 @@ impl Almanac {
     }
 
     /// Loads the provides bytes as one of the data types supported in ANISE.
-    pub fn load_from_bytes(self, bytes: BytesMut) -> AlmanacResult<Self> {
-        self._load_from_bytes(bytes, None)
+    pub fn load_from_bytes(self, bytes: BytesMut, path_str: &str) -> AlmanacResult<Self> {
+        self._load_from_bytes(bytes, Some(path_str))
     }
 
     fn _load_from_bytes(self, bytes: BytesMut, path: Option<&str>) -> AlmanacResult<Self> {
