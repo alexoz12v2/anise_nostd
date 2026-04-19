@@ -22,9 +22,7 @@ use anise::naif::kpl::parser::{convert_fk, convert_tpc};
 use anise::prelude::*;
 use anise::structure::dataset::{DataSetError, DataSetType};
 use anise::structure::metadata::Metadata;
-use anise::structure::{
-    EulerParameterDataSet, LocationDataSet, PlanetaryDataSet, SpacecraftDataSet,
-};
+use anise::structure::{EulerParameterDataSet, LocationDataSet, PlanetaryDataSet, SpacecraftDataSet};
 
 mod args;
 use args::{Actions, CliArgs};

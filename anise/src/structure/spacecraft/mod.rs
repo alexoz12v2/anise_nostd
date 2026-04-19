@@ -28,7 +28,10 @@ mod srp;
 
 /// Spacecraft constants can store the some of the spacecraft constant data as the CCSDS Orbit Parameter Message (OPM) and CCSDS Attitude Parameter Messages (APM)
 #[derive(Copy, Clone, Default, Debug, PartialEq)]
-#[cfg_attr(feature = "std", derive(serde_derive::Serialize, serde_derive::Deserialize))]
+#[cfg_attr(
+    feature = "std",
+    derive(serde_derive::Serialize, serde_derive::Deserialize)
+)]
 pub struct SpacecraftData {
     /// Mass of the spacecraft in kg
     pub mass: Option<Mass>,
@@ -161,7 +164,8 @@ impl SpacecraftDataSet {
             let data = if let Some(id) = opt_id {
                 self.get_by_id(*id).unwrap()
             } else {
-                self.get_by_name(opt_name.as_ref().unwrap().as_str()).unwrap()
+                self.get_by_name(opt_name.as_ref().unwrap().as_str())
+                    .unwrap()
             };
 
             let row = SpacecraftRow {

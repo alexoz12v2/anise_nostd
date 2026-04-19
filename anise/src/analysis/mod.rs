@@ -143,7 +143,9 @@ impl Almanac {
 
                         for (expr, alias) in report.scalars.iter() {
                             data.insert(
-                                alias.clone().unwrap_or_else(|| alloc::format!("{:?}", expr)),
+                                alias
+                                    .clone()
+                                    .unwrap_or_else(|| alloc::format!("{:?}", expr)),
                                 expr.evaluate(orbit, ab_corr, almanac),
                             );
                         }

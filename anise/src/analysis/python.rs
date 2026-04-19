@@ -447,8 +447,8 @@ impl PyScalarExpr {
     /// :rtype: ScalarExpr
     #[classmethod]
     fn from_s_expr(_cls: Bound<'_, PyType>, expr: &str) -> Result<Self, PyErr> {
-        let scalar =
-            ScalarExpr::from_s_expr(expr).map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
+        let scalar = ScalarExpr::from_s_expr(expr)
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
 
         scalar.try_into()
     }
@@ -596,7 +596,8 @@ impl PyStateSpec {
     /// :rtype: StateSpec
     #[classmethod]
     fn from_s_expr(_cls: Bound<'_, PyType>, expr: &str) -> Result<Self, PyErr> {
-        let spec = StateSpec::from_s_expr(expr).map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
+        let spec = StateSpec::from_s_expr(expr)
+            .map_err(|e| PyException::new_err(alloc::format!("{}", e)))?;
 
         spec.try_into()
     }

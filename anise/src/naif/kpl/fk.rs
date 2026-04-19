@@ -119,7 +119,10 @@ mod fk_ut {
         assert_eq!(assignments.len(), 5);
 
         // Check all of the data from this FK file
-        assert_eq!(assignments[&31000].name, Some(alloc::string::String::from("MOON_PA")));
+        assert_eq!(
+            assignments[&31000].name,
+            Some(alloc::string::String::from("MOON_PA"))
+        );
         assert_eq!(assignments[&31000].body_id, Some(31000));
         assert_eq!(
             assignments[&31000].data[&Parameter::Class],
@@ -144,7 +147,10 @@ mod fk_ut {
 
         assert_eq!(assignments[&31000].data.len(), 5);
 
-        assert_eq!(assignments[&31001].name, Some(alloc::string::String::from("MOON_ME")));
+        assert_eq!(
+            assignments[&31001].name,
+            Some(alloc::string::String::from("MOON_ME"))
+        );
         assert_eq!(assignments[&31001].body_id, Some(31001));
         assert_eq!(
             assignments[&31001].data[&Parameter::Class],
@@ -169,21 +175,30 @@ mod fk_ut {
 
         assert_eq!(assignments[&31001].data.len(), 5);
 
-        assert_eq!(assignments[&31006].name, Some(alloc::string::String::from("MOON_PA_DE421")));
+        assert_eq!(
+            assignments[&31006].name,
+            Some(alloc::string::String::from("MOON_PA_DE421"))
+        );
         assert_eq!(assignments[&31006].body_id, Some(31006));
         assert_eq!(assignments[&31006].data[&Parameter::Class], 2.into());
         assert_eq!(assignments[&31006].data[&Parameter::ClassId], 31006.into());
         assert_eq!(assignments[&31006].data[&Parameter::Center], 301.into());
         assert_eq!(assignments[&31006].data.len(), 3);
 
-        assert_eq!(assignments[&31002].name, Some(alloc::string::String::from("MOON_PA_DE403")));
+        assert_eq!(
+            assignments[&31002].name,
+            Some(alloc::string::String::from("MOON_PA_DE403"))
+        );
         assert_eq!(assignments[&31002].body_id, Some(31002));
         assert_eq!(assignments[&31002].data[&Parameter::Class], 2.into());
         assert_eq!(assignments[&31002].data[&Parameter::ClassId], 31002.into());
         assert_eq!(assignments[&31002].data[&Parameter::Center], 301.into());
         assert_eq!(assignments[&31002].data.len(), 3);
 
-        assert_eq!(assignments[&31007].name, Some(alloc::string::String::from("MOON_ME_DE421")));
+        assert_eq!(
+            assignments[&31007].name,
+            Some(alloc::string::String::from("MOON_ME_DE421"))
+        );
         assert_eq!(assignments[&31007].body_id, Some(31007));
         assert_eq!(assignments[&31007].data[&Parameter::Class], 4.into());
         assert_eq!(assignments[&31007].data[&Parameter::ClassId], 31007.into());

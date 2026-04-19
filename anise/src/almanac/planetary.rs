@@ -172,7 +172,8 @@ impl PlanetaryDataSet {
             let data = if let Some(id) = opt_id {
                 self.get_by_id(*id).unwrap()
             } else {
-                self.get_by_name(opt_name.as_ref().unwrap().as_str()).unwrap()
+                self.get_by_name(opt_name.as_ref().unwrap().as_str())
+                    .unwrap()
             };
 
             let mut row = PlanetaryRow {

@@ -414,7 +414,10 @@ impl Ephemeris {
         writeln!(
             writer,
             "CREATION_DATE = {}",
-            Formatter::new(Epoch::from_gregorian_tai_at_midnight(2000, 1, 1), iso8601_no_ts)
+            Formatter::new(
+                Epoch::from_gregorian_tai_at_midnight(2000, 1, 1),
+                iso8601_no_ts
+            )
         )
         .map_err(err_hdlr)?;
         writeln!(

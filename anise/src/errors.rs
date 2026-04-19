@@ -33,7 +33,6 @@ pub enum IOErrorKind {
     Other,
 }
 
-
 #[cfg(feature = "metaload")]
 use crate::almanac::metaload::MetaAlmanacError;
 #[cfg(feature = "metaload")]

@@ -14,9 +14,7 @@ use anise::analysis::prelude::{
     find_arc_intersections, Condition, Event, EventArc, EventDetails, EventEdge, OrbitalElement,
     Plane, VisibilityArc,
 };
-use anise::analysis::python::{
-    PyFrameSpec, PyOrthogonalFrame, PyScalarExpr, PyStateSpec, PyVectorExpr,
-};
+use anise::analysis::python::{PyFrameSpec, PyOrthogonalFrame, PyScalarExpr, PyStateSpec, PyVectorExpr};
 use anise::analysis::report::PyReportScalars;
 use anise::astro::orbit::Orbit;
 use anise::astro::Aberration;

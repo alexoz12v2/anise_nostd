@@ -10,7 +10,7 @@
 
 use pyo3::prelude::*;
 
-use ::anise::almanac::metaload::{MetaAlmanacError, MetaFile};
+use anise::almanac::metaload::{MetaAlmanacError, MetaFile};
 
 use std::env::consts::OS;
 use std::fs;

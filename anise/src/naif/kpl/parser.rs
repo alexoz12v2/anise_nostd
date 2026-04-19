@@ -273,8 +273,7 @@ pub fn convert_tpc_items(
                                             .data
                                             .get(&Parameter::PrimeMeridian)
                                             .ok_or(DataSetError::Conversion {
-                                                action: "missing PrimeMeridian parameter"
-                                                    .into(),
+                                                action: "missing PrimeMeridian parameter".into(),
                                             })?;
                                         let mut prime_mer_data: Vec<f64> = prime_mer_data
                                         .to_vec_f64()
@@ -484,9 +483,10 @@ pub fn convert_fk_items(
                 .ok_or(DataSetError::Conversion {
                     action: format!("no unit data for FK ID {id}"),
                 })?;
-            let mut angle_data: alloc::vec::Vec<f64> = KPLValue::to_vec_f64(angles).map_err(|_| DataSetError::Conversion {
-                action: format!("Angle data must be a Matrix but was {angles:?}"),
-            })?;
+            let mut angle_data: alloc::vec::Vec<f64> =
+                KPLValue::to_vec_f64(angles).map_err(|_| DataSetError::Conversion {
+                    action: format!("Angle data must be a Matrix but was {angles:?}"),
+                })?;
             if unit == &KPLValue::String(alloc::string::String::from("ARCSECONDS")) {
                 // Convert the angles data into degrees
                 for item in &mut angle_data {
@@ -570,9 +570,10 @@ pub fn convert_fk_items(
 
             dataset.push(q, Some(id), item.name.as_deref())?;
         } else if let Some(matrix) = item.data.get(&Parameter::Matrix) {
-            let mat_data: alloc::vec::Vec<f64> = KPLValue::to_vec_f64(matrix).map_err(|_| DataSetError::Conversion {
-                action: format!("Matrix parameter must be a Matrix but was {matrix:?}"),
-            })?;
+            let mat_data: alloc::vec::Vec<f64> =
+                KPLValue::to_vec_f64(matrix).map_err(|_| DataSetError::Conversion {
+                    action: format!("Matrix parameter must be a Matrix but was {matrix:?}"),
+                })?;
             if mat_data.len() != 9 {
                 return Err(DataSetError::Conversion {
                     action: format!("Matrix data must be length 9 but was {}", mat_data.len()),

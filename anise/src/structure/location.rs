@@ -97,9 +97,9 @@ impl Location {
         if self.terrain_mask.is_empty() {
             return 0.0;
         }
-        let idx = self
-            .terrain_mask
-            .partition_point(|mask| mask.azimuth_deg <= num_traits::Euclid::rem_euclid(&azimuth_deg, &360.0));
+        let idx = self.terrain_mask.partition_point(|mask| {
+            mask.azimuth_deg <= num_traits::Euclid::rem_euclid(&azimuth_deg, &360.0)
+        });
         if idx == 0 {
             return self
                 .terrain_mask

@@ -34,10 +34,7 @@ use snafu::ResultExt;
 use zerocopy::FromBytes;
 
 use crate::ephemerides::SPKSnafu;
-use crate::errors::{
-    AlmanacError, AlmanacResult, EphemerisSnafu, OrientationSnafu,
-    TLDataSetSnafu,
-};
+use crate::errors::{AlmanacError, AlmanacResult, EphemerisSnafu, OrientationSnafu, TLDataSetSnafu};
 use crate::math::rotation::EulerParameter;
 use crate::naif::daf::{FileRecord, NAIFRecord};
 use crate::naif::{BPC, SPK};
@@ -498,7 +495,7 @@ impl Almanac {
     /// is larger than the previous capacity. This effectively adopts a
     /// "high watermark" memory strategy, where the memory usage for this slot
     /// is determined by the largest file ever loaded into it.
-#[cfg(feature = "std")]
+    #[cfg(feature = "std")]
     pub fn spk_swap(
         &mut self,
         alias: &str,
@@ -552,7 +549,7 @@ impl Almanac {
     /// "high watermark" memory strategy, where the memory usage for this slot
     /// is determined by the largest file ever loaded into it.
     #[cfg(feature = "std")]
-#[cfg(feature = "std")]
+    #[cfg(feature = "std")]
     pub fn bpc_swap(
         &mut self,
         alias: &str,

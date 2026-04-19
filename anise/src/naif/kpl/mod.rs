@@ -1,5 +1,3 @@
-
-
 use crate::naif::kpl::parser::Assignment;
 /*
  * ANISE Toolkit
@@ -45,21 +43,27 @@ impl KPLValue {
     pub fn to_vec_f64(&self) -> Result<alloc::vec::Vec<f64>, alloc::string::String> {
         match self {
             KPLValue::Matrix(data) => Ok(data.clone()),
-            _ => Err(alloc::format!("can only convert matrices to vec of f64 but this is {self:?}")),
+            _ => Err(alloc::format!(
+                "can only convert matrices to vec of f64 but this is {self:?}"
+            )),
         }
     }
 
     pub fn to_i32(&self) -> Result<i32, alloc::string::String> {
         match self {
             KPLValue::Integer(data) => Ok(*data),
-            _ => Err(alloc::format!("can only convert Integer to i32 but this is {self:?}")),
+            _ => Err(alloc::format!(
+                "can only convert Integer to i32 but this is {self:?}"
+            )),
         }
     }
 
     pub fn to_string(&self) -> Result<alloc::string::String, alloc::string::String> {
         match self {
             KPLValue::String(data) => Ok(data.clone()),
-            _ => Err(alloc::format!("can only convert Integer to i32 but this is {self:?}")),
+            _ => Err(alloc::format!(
+                "can only convert Integer to i32 but this is {self:?}"
+            )),
         }
     }
 }
@@ -88,7 +92,9 @@ impl TryFrom<&KPLValue> for f64 {
     fn try_from(value: &KPLValue) -> Result<Self, Self::Error> {
         match value {
             KPLValue::Float(data) => Ok(*data),
-            _ => Err(alloc::format!("can only convert float to f64 but this is {value:?}")),
+            _ => Err(alloc::format!(
+                "can only convert float to f64 but this is {value:?}"
+            )),
         }
     }
 }
@@ -145,12 +151,8 @@ impl FromStr for Parameter {
             "UNITS" => Ok(Self::Units),
             "AXES" => Ok(Self::Axes),
             "MAX_PHASE_DEGREE" => Ok(Self::MaxPhaseDegree),
-            "GMLIST" | "NAME" | "SPEC" => {
-                Err(alloc::format!("unsupported parameter `{s}`"))
-            }
-            _ => {
-                Err(alloc::format!("unknown parameter `{s}`"))
-            }
+            "GMLIST" | "NAME" | "SPEC" => Err(alloc::format!("unsupported parameter `{s}`")),
+            _ => Err(alloc::format!("unknown parameter `{s}`")),
         }
     }
 }

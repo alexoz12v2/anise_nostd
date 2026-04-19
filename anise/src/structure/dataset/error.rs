@@ -22,7 +22,6 @@ impl core::fmt::Display for IOError {
 #[cfg(not(feature = "std"))]
 impl core::error::Error for IOError {}
 
-
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub(crate)))]
 #[non_exhaustive]

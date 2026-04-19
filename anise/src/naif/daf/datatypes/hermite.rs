@@ -14,9 +14,7 @@ use hifitime::{Duration, Epoch, TimeUnits};
 use snafu::{ensure, ResultExt};
 
 use crate::errors::{DecodingError, IntegrityError, TooFewDoublesSnafu};
-use crate::math::interpolation::{
-    hermite_eval, InterpDecodingSnafu, InterpolationError, MAX_SAMPLES,
-};
+use crate::math::interpolation::{hermite_eval, InterpDecodingSnafu, InterpolationError, MAX_SAMPLES};
 use crate::naif::daf::NAIFSummaryRecord;
 use crate::{
     math::Vector3,

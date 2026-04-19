@@ -35,7 +35,10 @@ use pyo3::prelude::*;
 /// :type args: tuples
 /// :rtype: Orbit
 #[derive(Copy, Clone, Debug)]
-#[cfg_attr(feature = "std", derive(serde_derive::Serialize, serde_derive::Deserialize))]
+#[cfg_attr(
+    feature = "std",
+    derive(serde_derive::Serialize, serde_derive::Deserialize)
+)]
 #[cfg_attr(feature = "python", pyclass(name = "Orbit"))]
 #[cfg_attr(feature = "python", pyo3(module = "anise.astro"))]
 pub struct CartesianState {
