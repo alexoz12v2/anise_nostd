@@ -131,6 +131,20 @@ impl Almanac {
         }
         self
     }
+
+    pub fn set_planetary_data_as(
+        &mut self,
+        planetary_data: PlanetaryDataSet,
+        alias: Option<String>,
+    ) {
+        // For lifetime reasons, we format the message using a ref first.
+        // This message is only displayed if there was something with that name before.
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
+        let msg = format!("unloading planetary data `{alias}`");
+        if self.planetary_data.insert(alias, planetary_data).is_some() {
+            warn!("{msg}");
+        }
+    }
 }
 
 #[derive(Default)]

@@ -152,6 +152,22 @@ impl Almanac {
         self
     }
 
+    pub fn set_spacecraft_data_as(
+        &mut self,
+        spacecraft_data: SpacecraftDataSet,
+        alias: Option<String>,
+    ) {
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
+        let msg = format!("unloading spacecraft data `{alias}`");
+        if self
+          .spacecraft_data
+          .insert(alias, spacecraft_data)
+          .is_some()
+        {
+            warn!("{msg}");
+        }
+    }
+
     /// Loads the provided Euler parameter data into a clone of this original Almanac.
     pub fn with_euler_parameters(self, ep_dataset: EulerParameterDataSet) -> Self {
         self.with_euler_parameters_as(ep_dataset, None)
@@ -171,6 +187,18 @@ impl Almanac {
         self
     }
 
+    pub fn set_euler_parameters_as(
+        &mut self,
+        ep_dataset: EulerParameterDataSet,
+        alias: Option<String>,
+    ) {
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
+        let msg = format!("unloading Euler parameter data `{alias}`");
+        if self.euler_param_data.insert(alias, ep_dataset).is_some() {
+            warn!("{msg}");
+        }
+    }
+
     /// Loads the provided location data.
     pub fn with_location_data(self, loc_dataset: LocationDataSet) -> Self {
         self.with_location_data_as(loc_dataset, None)
@@ -188,6 +216,18 @@ impl Almanac {
             warn!("{msg}");
         }
         self
+    }
+
+    pub fn set_location_data_as(
+        &mut self,
+        loc_dataset: LocationDataSet,
+        alias: Option<String>,
+    ) {
+        let alias = alias.unwrap_or(alloc::string::String::from("unknown"));
+        let msg = format!("unloading location data `{alias}`");
+        if self.location_data.insert(alias, loc_dataset).is_some() {
+            warn!("{msg}");
+        }
     }
 
     /// Loads the provided instrument data.
@@ -210,11 +250,186 @@ impl Almanac {
     }
 
     /// Loads the provides bytes as one of the data types supported in ANISE.
-    pub fn load_from_bytes(self, bytes: BytesMut, path_str: &str) -> AlmanacResult<Self> {
+    pub fn load_from_bytes(self, bytes: bytes::Bytes, path_str: &str) -> AlmanacResult<Self> {
         self._load_from_bytes(bytes, Some(path_str))
     }
 
-    fn _load_from_bytes(self, bytes: BytesMut, path: Option<&str>) -> AlmanacResult<Self> {
+    /// Loads the provided bytes as one of the data types supported in ANISE, mutating in-place.
+    ///
+    /// **Transactional guarantee**: The bytes are fully parsed before any internal maps
+    /// are modified. If parsing fails, an `Err` is returned and the `Almanac` remains fully intact.
+    pub fn load_from_bytes_mut(&mut self, bytes: bytes::Bytes, path_str: &str) -> AlmanacResult<()> {
+        self._load_from_bytes_mut(bytes, Some(path_str))
+    }
+
+    fn _load_from_bytes_mut(&mut self, bytes: bytes::Bytes, path: Option<&str>) -> AlmanacResult<()> {
+        // Check if they forgot to run git lfs
+        if let Some(lfs_header) = bytes.get(..8) {
+            if lfs_header == b"version " {
+                return Err(AlmanacError::GenericError {
+                    err: "file is a git lfs pointer, run `git lfs pull`".to_string(),
+                });
+            }
+        }
+
+        let alias = path.map(|p| p.to_string()).unwrap_or_else(|| "unknown".to_string());
+
+        // Load the header only to check for NAIF formats
+        if let Some(file_record_bytes) = bytes.get(..FileRecord::SIZE) {
+            let file_record = FileRecord::read_from_bytes(file_record_bytes).unwrap();
+            if let Ok(fileid) = file_record.identification() {
+                return match fileid {
+                    "PCK" => {
+                        info!("Loading {} as DAF/PCK", path.unwrap_or("bytes"));
+                        // 1. Fully parse the file FIRST (Can fail here)
+                        let bpc = BPC::parse(bytes)
+                          .context(BPCSnafu { action: "parsing bytes" })
+                          .context(OrientationSnafu { action: "from generic loading" })?;
+
+                        // 2. Insert ONLY if parsing succeeded (Transactional commit)
+                        let msg = format!("unloading BPC data `{alias}`");
+                        if self.bpc_data.insert(alias, bpc).is_some() { warn!("{msg}"); }
+                        Ok(())
+                    }
+                    "SPK" => {
+                        info!("Loading {} as DAF/SPK", path.unwrap_or("bytes"));
+                        let spk = SPK::parse(bytes)
+                          .context(SPKSnafu { action: "parsing bytes" })
+                          .context(EphemerisSnafu { action: "from generic loading" })?;
+
+                        let msg = format!("unloading SPK data `{alias}`");
+                        if self.spk_data.insert(alias, spk).is_some() { warn!("{msg}"); }
+                        Ok(())
+                    }
+                    fileid => Err(AlmanacError::GenericError {
+                        err: format!("DAF/{fileid} is not yet supported"),
+                    }),
+                };
+            }
+            // Fall through to try to load as an ANISE file
+        }
+
+        // Try ANISE specific datasets
+        if let Ok(metadata) = Metadata::decode_header(&bytes) {
+            let dataset_type = DataSetType::try_from(metadata.dataset_type as u8).map_err(|err| {
+                AlmanacError::GenericError { err: format!("Invalid dataset type: {err}") }
+            })?;
+
+            return match dataset_type {
+                DataSetType::NotApplicable => {
+                    Err(AlmanacError::GenericError {
+                        err: format!("Malformed dataset type in {}", path.unwrap_or("bytes")),
+                    })
+                }
+                DataSetType::SpacecraftData => {
+                    let dataset = SpacecraftDataSet::try_from_bytes(bytes)
+                      .context(TLDataSetSnafu { action: "loading as spacecraft data" })?;
+                    info!("Loading {} as ANISE spacecraft data", path.unwrap_or("bytes"));
+                    let msg = format!("unloading spacecraft data `{alias}`");
+                    if self.spacecraft_data.insert(alias, dataset).is_some() { warn!("{msg}"); }
+                    Ok(())
+                }
+                DataSetType::PlanetaryData => {
+                    let dataset = PlanetaryDataSet::try_from_bytes(bytes)
+                      .context(TLDataSetSnafu { action: "loading as planetary data" })?;
+                    info!("Loading {} as ANISE/PCA", path.unwrap_or("bytes"));
+                    let msg = format!("unloading planetary data `{alias}`");
+                    if self.planetary_data.insert(alias, dataset).is_some() { warn!("{msg}"); }
+                    Ok(())
+                }
+                DataSetType::EulerParameterData => {
+                    let dataset = EulerParameterDataSet::try_from_bytes(bytes)
+                      .context(TLDataSetSnafu { action: "loading Euler parameters" })?;
+                    info!("Loading {} as ANISE/EPA", path.unwrap_or("bytes"));
+                    let msg = format!("unloading Euler parameter data `{alias}`");
+                    if self.euler_param_data.insert(alias, dataset).is_some() { warn!("{msg}"); }
+                    Ok(())
+                }
+                DataSetType::LocationData => {
+                    let dataset = LocationDataSet::try_from_bytes(bytes)
+                      .context(TLDataSetSnafu { action: "loading location data" })?;
+                    info!("Loading {} as ANISE/LDA", path.unwrap_or("bytes"));
+                    let msg = format!("unloading location data `{alias}`");
+                    if self.location_data.insert(alias, dataset).is_some() { warn!("{msg}"); }
+                    Ok(())
+                }
+            };
+        }
+
+        if let Ok(metadata) = Metadata::decode_header(&bytes) {
+            // Use `try_from` to validate the dataset type
+            let dataset_type =
+              DataSetType::try_from(metadata.dataset_type as u8).map_err(|err| {
+                  AlmanacError::GenericError {
+                      err: format!("Invalid dataset type: {err}"),
+                  }
+              })?;
+
+            let path_str = path.map(|str| str.to_string());
+
+            // Now, we can load this depending on the kind of data that it is
+            match dataset_type {
+                DataSetType::NotApplicable => {
+                    // Not something that can be decoded
+                    Err(AlmanacError::GenericError {
+                        err: format!("Malformed dataset type in {}", path.unwrap_or("bytes")),
+                    })
+                }
+                DataSetType::SpacecraftData => {
+                    // Decode as spacecraft data
+                    let dataset = SpacecraftDataSet::try_from_bytes(bytes).context({
+                        TLDataSetSnafu {
+                            action: "loading as spacecraft data",
+                        }
+                    })?;
+                    info!(
+                        "Loading {} as ANISE spacecraft data",
+                        path.unwrap_or("bytes")
+                    );
+                    self.set_spacecraft_data_as(dataset, path_str);
+                    Ok(())
+                }
+                DataSetType::PlanetaryData => {
+                    // Decode as planetary data
+                    let dataset = PlanetaryDataSet::try_from_bytes(bytes).context({
+                        TLDataSetSnafu {
+                            action: "loading as planetary data",
+                        }
+                    })?;
+                    info!("Loading {} as ANISE/PCA", path.unwrap_or("bytes"));
+                    self.set_planetary_data_as(dataset, path_str);
+                    Ok(())
+                }
+                DataSetType::EulerParameterData => {
+                    // Decode as euler parameter data
+                    let dataset = EulerParameterDataSet::try_from_bytes(bytes).context({
+                        TLDataSetSnafu {
+                            action: "loading Euler parameters",
+                        }
+                    })?;
+                    info!("Loading {} as ANISE/EPA", path.unwrap_or("bytes"));
+                    self.set_euler_parameters_as(dataset, path_str);
+                    Ok(())
+                }
+                DataSetType::LocationData => {
+                    let dataset = LocationDataSet::try_from_bytes(bytes).context({
+                        TLDataSetSnafu {
+                            action: "loading location data",
+                        }
+                    })?;
+                    info!("Loading {} as ANISE/LDA", path.unwrap_or("bytes"));
+                    self.set_location_data_as(dataset, path_str);
+                    Ok(())
+                }
+            }
+        } else {
+            Err(AlmanacError::GenericError {
+                err: "file cannot be inspected or loaded directly in ANISE".to_string(),
+            })
+        }
+    }
+
+    fn _load_from_bytes(self, bytes: bytes::Bytes, path: Option<&str>) -> AlmanacResult<Self> {
         // Check if they forgot to run git lfs
         if let Some(lfs_header) = bytes.get(..8) {
             if lfs_header == "version".as_bytes() {
@@ -339,7 +554,7 @@ impl Almanac {
                     source: crate::errors::InputOutputError::IOError { kind: e.kind() },
                 })
             }
-            Ok(bytes) => BytesMut::from(&bytes[..]),
+            Ok(bytes) => bytes::Bytes::from(bytes),
         };
 
         self._load_from_bytes(bytes, Some(path))

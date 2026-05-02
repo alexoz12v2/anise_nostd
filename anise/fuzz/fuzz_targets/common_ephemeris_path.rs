@@ -16,7 +16,7 @@ fuzz_target!(
         let almanac = Almanac::default();
 
         let bytes = BytesMut::from(data.0);
-        if let Ok(almanac) = almanac.load_from_bytes(bytes) {
+        if let Ok(almanac) = almanac.load_from_bytes(bytes.freeze()) {
             let _ = almanac.common_ephemeris_path(from_frame, to_frame, epoch);
         }
     }

@@ -9,7 +9,7 @@ fuzz_target!(|data: &[u8]| {
     let mut bytes = BytesMut::new();
     bytes.reserve(data.len());
     bytes.extend(data.iter());
-    if let Ok(almanac) = almanac.load_from_bytes(bytes) {
+    if let Ok(almanac) = almanac.load_from_bytes(bytes.freeze()) {
         almanac.describe(
             Some(true),
             Some(true),
