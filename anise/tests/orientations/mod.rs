@@ -5,9 +5,7 @@ use anise::constants::frames::{
     JUPITER_BARYCENTER_J2000, MOON_J2000, MOON_ME_DE440_ME421_FRAME, MOON_PA_DE421_FRAME,
     MOON_PA_DE440_FRAME,
 };
-use anise::constants::orientations::{
-    ECLIPJ2000, IAU_JUPITER, IAU_MOON, ITRF93, J2000, MOON_PA_DE440,
-};
+use anise::constants::orientations::{ECLIPJ2000, IAU_JUPITER, IAU_MOON, ITRF93, J2000, MOON_PA_DE440};
 use anise::constants::usual_planetary_constants::MEAN_EARTH_ANGULAR_VELOCITY_DEG_S;
 use anise::math::rotation::{EulerParameter, DCM};
 use anise::math::{Matrix3, Vector3};
