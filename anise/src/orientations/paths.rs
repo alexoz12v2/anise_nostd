@@ -94,6 +94,13 @@ impl Almanac {
             return Ok((of_path_len, of_path));
         }
 
+        // ECLIPJ2000 is not stored in any BPC, planetary data, or Euler parameter dataset.
+        // Its parent (J2000) is hardcoded, consistent with rotation_to_parent().
+        if source.orientation_id == ECLIPJ2000 {
+            of_path[0] = Some(J2000);
+            return Ok((1, of_path));
+        }
+
         // Grab the summary data, which we use to find the paths
         // Let's see if this orientation is defined in the loaded BPC files
         let mut inertial_frame_id = match self.bpc_summary_at_epoch(source.orientation_id, epoch) {
